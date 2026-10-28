@@ -83,7 +83,7 @@ export function DuelSetup() {
           <button role="radio" aria-checked={chainPrompts === "auto"} className={chainPrompts === "auto" ? "on" : ""} onClick={() => setChainPrompts("auto")}>Ketten: nur wenn sinnvoll</button>
           <button role="radio" aria-checked={chainPrompts === "all"} className={chainPrompts === "all" ? "on" : ""} onClick={() => setChainPrompts("all")}>Ketten: immer fragen</button>
         </div>
-        <p className="muted small">„Nur wenn sinnvoll“ fragt wie EDOPro nur, wenn eine Karte gerade passend antworten kann (z. B. Ash Blossom auf eine Suche). Schnellzauber kannst du jederzeit in deiner Main Phase aktivieren.</p>
+        <p className="muted small">„Nur wenn sinnvoll“ fragt wie EDOPro nur, wenn eine Karte gerade passend antworten kann – aber nie auf deine eigenen Effekte (keine Ash auf die eigene Suche). Schnellzauber aktivierst du jederzeit in deiner Main Phase.</p>
         <label className="field">
           <span>Seed (leer = zufällig; gleicher Seed = gleiches Mischen)</span>
           <input inputMode="numeric" value={seedText} onChange={(e) => setSeedText(e.target.value)} placeholder="z. B. 1234" aria-invalid={!seedOk} />

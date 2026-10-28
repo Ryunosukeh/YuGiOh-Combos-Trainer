@@ -34,8 +34,9 @@ export interface DuelConfig {
   /** Leere Antwortfenster automatisch passen (Standard: ja). */
   autoPassEmpty?: boolean;
   /**
-   * Antwortfenster mit Optionen: "auto" (Standard, wie EDOPro) fragt nur, wenn der Kern passende Auslöser bzw.
-   * Schnelleffekte meldet (spe_count > 0); "all" fragt bei jeder Möglichkeit.
+   * Antwortfenster mit Optionen: "auto" (Standard) fragt nur, wenn der Kern passende Auslöser bzw.
+   * Schnelleffekte meldet (spe_count > 0, wie EDOPro) und das letzte Kettenglied nicht dein eigenes ist
+   * (keine Ash auf die eigene Suche). "all" fragt bei jeder Möglichkeit.
    */
   chainPrompts?: "auto" | "all";
   startingLP?: number;
@@ -68,6 +69,8 @@ export class DuelSession {
   /** Zugnummer (1 = erster Zug), Spieler am Zug, aktuelle Phase (OcgPhase). */
   turn = 0;
   turnPlayer: 0 | 1 = 0;
+  /** Spieler der Glieder der aktuell entstehenden Kette (für „nicht auf eigene Effekte antworten“). */
+  private chainOwners: (0 | 1)[] = [];
   phase = 0;
   /** Skripte, die der Kern angefragt hat, die es aber nicht gibt (Diagnose). */
   readonly missingScripts = new Set<string>();
@@ -205,6 +208,8 @@ export class DuelSession {
         else if (m.type === OcgMessageType.RECOVER) this.lp[m.player] += m.amount;
         else if (m.type === OcgMessageType.NEW_TURN) { this.turn++; this.turnPlayer = m.player as 0 | 1; }
         else if (m.type === OcgMessageType.NEW_PHASE) this.phase = m.phase;
+        else if (m.type === OcgMessageType.CHAINING) this.chainOwners.push(m.controller);
+        else if (m.type === OcgMessageType.CHAIN_END) this.chainOwners = [];
       }
       if (status === OcgProcessResult.END || this.result) return;
       if (status === OcgProcessResult.CONTINUE) continue;
@@ -237,8 +242,10 @@ export class DuelSession {
 
   private autoResponse(d: Decision): OcgResponse | null {
     if (isEmptyChainWindow(d.msg) && this.config.autoPassEmpty !== false) return dummyResponse(d.msg, this.data);
-    if (d.msg.type === OcgMessageType.SELECT_CHAIN && !d.msg.forced && d.msg.spe_count === 0 && this.config.chainPrompts !== "all")
-      return { type: OcgResponseType.SELECT_CHAIN, index: null };
+    if (d.msg.type === OcgMessageType.SELECT_CHAIN && !d.msg.forced && this.config.chainPrompts !== "all") {
+      const ownLastLink = this.chainOwners.at(-1) === d.player;
+      if (d.msg.spe_count === 0 || ownLastLink) return { type: OcgResponseType.SELECT_CHAIN, index: null };
+    }
     if (!d.forOpponent) return null;
     if (this.config.opponent?.mode === "ask") {
       // Zugsteuerung bleibt beim Dummy; alle echten Entscheidungen (Handtraps, Ziele …) trifft der Nutzer.

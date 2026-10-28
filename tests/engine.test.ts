@@ -145,8 +145,10 @@ describe.skipIf(!hasData)("Engine", () => {
     // Schnellzauber ohne Bezug: Standard überspringt das Fenster nach der Auflösung, „all“ fragt.
     expect(after("auto", [C.Angwitch, C.MementoFusion], true)).toBe(OcgMessageType.SELECT_IDLECMD);
     expect(after("all", [C.Angwitch, C.MementoFusion], true)).toBe(OcgMessageType.SELECT_CHAIN);
-    // Verbotener Kelch kann den Effekt der Enghexe sinnvoll beantworten → wird auch im Standard angeboten.
-    expect(after("auto", [C.Angwitch, C.ForbiddenChalice], false)).toBe(OcgMessageType.SELECT_CHAIN);
+    // Handtraps/Konter auf den eigenen Effekt: Standard fragt nicht (keine Ash auf die eigene Suche), „all“ schon.
+    expect(after("auto", [C.Angwitch, C.AshBlossom], false)).toBe(OcgMessageType.SELECT_CARD);
+    expect(after("auto", [C.Angwitch, C.ForbiddenChalice], false)).toBe(OcgMessageType.SELECT_CARD);
+    expect(after("all", [C.Angwitch, C.AshBlossom], false)).toBe(OcgMessageType.SELECT_CHAIN);
   });
 
 });

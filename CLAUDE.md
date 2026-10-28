@@ -51,8 +51,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Duell läuft im Web Worker (`src/worker/`); Oberfläche baut Prompts selbst aus der Nachricht (Funktionen sind
   nicht übertragbar). Feld = Abfrage nach jeder Entscheidung (`engine/view.ts`), nicht aus MOVE nachgebaut.
 - Duell-Sicherung: Konfiguration + Antworten in sessionStorage → Neuladen spielt neu ab.
-- Kettenfenster: Standard „auto“ wie EDOPro (nur fragen, wenn `spe_count > 0`), wählbar „all“. Teil der
-  Duell-Konfiguration, damit Neuabspielen deterministisch bleibt.
+- Kettenfenster: Standard „auto“ = nur fragen, wenn `spe_count > 0` (wie EDOPro) UND das letzte Kettenglied
+  nicht dem Fragenden gehört (keine Ash auf die eigene Suche); wählbar „all“. Teil der Duell-Konfiguration,
+  damit Neuabspielen deterministisch bleibt.
 - Zonenwahl: Auswahlfenster startet eingeklappt, leuchtende Zone auf dem Feld antippen.
 - Tippen immer über `click` auslösen, nie über `pointerup` (`usePress`): Sonst trifft der nachfolgende
   Touch-Klick einen Knopf im gerade geöffneten Menü („Geisterklick“ → ungewolltes „Setzen“). Duell-Tests
