@@ -40,13 +40,29 @@ jobs:
           restore-keys: data-sources-
 
       - name: Datenpaket bauen
-        run: node --version && npm run update-data
+        shell: bash
+        run: |
+          node --version
+          set -o pipefail
+          npm run update-data 2>&1 | tee update-data.log
+
+      - name: Fehlerausgabe als Annotation
+        if: failure()
+        shell: bash
+        run: |
+          for f in update-data.log test.log; do
+            [ -f "$f" ] && echo "::error title=$f::$(tail -c 3000 "$f" | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')"
+          done
+          true
 
       - name: Typprüfung
         run: npm run typecheck
 
       - name: Engine-Tests (inkl. Abnahme-Combo)
-        run: npm test
+        shell: bash
+        run: |
+          set -o pipefail
+          npm test 2>&1 | tee test.log
 
       - name: Web-App bauen
         run: npm run build:site
