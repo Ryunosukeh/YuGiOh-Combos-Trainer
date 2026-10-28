@@ -1,8 +1,8 @@
 node_modules/
-dist/
-.cache/
+/dist/
+/.cache/
 # Erzeugte Daten (Project Ignis / YGOPRODeck) nie committen
-data/
+/data/
 *.cdb
 *.lflist.conf
 test-results/
