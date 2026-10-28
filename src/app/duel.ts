@@ -5,6 +5,7 @@ import { create } from "zustand";
 import type { DuelConfig } from "../engine/session";
 import type { DuelView } from "../engine/view";
 import type { FromWorker, ToWorker } from "../worker/protocol";
+import { stepsToUndoAction } from "../engine/undo";
 
 const SAVE_KEY = "duel-save";
 // JSON kennt kein BigInt (kommt in Antworten wie ANNOUNCE_RACE vor).
@@ -26,6 +27,8 @@ interface DuelState {
   /** Letzte Antwort wurde vom Kern abgelehnt. */
   rejected: boolean;
   lastMs: number;
+  /** Bisherige Nutzerentscheidungen (für „Aktion zurück“). */
+  responses: OcgResponse[];
   /** Auswahlfenster eingeklappt („Feld ansehen“). */
   minimized: boolean;
   /** Geöffneter Stapel (Friedhof, Verbannt, Extra Deck). */
@@ -35,6 +38,8 @@ interface DuelState {
   start(config: DuelConfig, deckId?: string, responses?: OcgResponse[]): void;
   respond(r: OcgResponse): void;
   undo(n?: number): void;
+  /** Letzte ganze Aktion zurücknehmen (inkl. Zonenwahl, Zielen, Ja/Nein). */
+  undoAction(): void;
   restart(newSeed?: number): void;
   leave(): void;
   restore(): boolean;
@@ -62,7 +67,7 @@ export const useDuel = create<DuelState>()((set, get) => {
       case "state":
         save(m.responses);
         set((s) => ({
-          status: "ready", view: m.view, busy: false, rejected: false, lastMs: m.ms, cardMenu: null, minimized: false,
+          status: "ready", view: m.view, busy: false, rejected: false, lastMs: m.ms, cardMenu: null, minimized: false, responses: m.responses,
           log: m.reset ? m.messages : [...s.log, ...m.messages],
         }));
         break;
@@ -77,7 +82,7 @@ export const useDuel = create<DuelState>()((set, get) => {
   const base = () => new URL("data/", document.baseURI).toString();
 
   return {
-    status: "idle", error: null, view: null, log: [], config: null, busy: false, rejected: false, lastMs: 0,
+    status: "idle", error: null, view: null, log: [], config: null, busy: false, rejected: false, lastMs: 0, responses: [],
     minimized: false, pile: null, cardMenu: null,
 
     start(config, deckId, responses = []) {
@@ -93,6 +98,10 @@ export const useDuel = create<DuelState>()((set, get) => {
       if (get().busy || !get().view?.steps) return;
       set({ busy: true, cardMenu: null, pile: null });
       send({ type: "undo", n });
+    },
+    undoAction() {
+      const n = stepsToUndoAction(get().responses);
+      if (n) get().undo(n);
     },
     restart(newSeed) {
       const c = get().config;

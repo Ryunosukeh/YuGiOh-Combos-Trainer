@@ -175,6 +175,18 @@ test("Abnahme-Combo komplett über die Oberfläche", async ({ page }) => {
   await passChains(page);
   await shot(page, "27-endzustand");
   await checkLayout(page);
+
+  // Combo-Protokoll: Hochformat über den Knopf, Querformat in der Seitenleiste
+  if (test.info().project.name.startsWith("hoch")) await page.getByRole("button", { name: "Protokoll" }).click();
+  const protocol = page.getByRole("region", { name: "Combo-Protokoll" });
+  await expect(protocol).toContainText("NS Mementotlanische Enghexe");
+  await expect(protocol).toContainText("Mementotlanische Enghexe: sucht Mementotlanischer Tatsunootoshigo");
+  await expect(protocol).toContainText("Mementomictlan: setzt Mementotlanische Fusion");
+  await expect(protocol).not.toContainText("Blauäugiger");
+  await protocol.getByRole("button", { name: "Kopieren" }).click();
+  await expect(protocol.getByRole("button", { name: /Kopiert|manuell kopieren/ })).toBeVisible();
+  await shot(page, "30-protokoll");
+  await checkLayout(page);
 });
 
 test("Rückgängig, Feld ansehen und Drehen während einer Auswahl", async ({ page }) => {
@@ -200,11 +212,17 @@ test("Rückgängig, Feld ansehen und Drehen während einer Auswahl", async ({ pa
   await settle(page);
   await expect(page.getByRole("button", { name: /Mementotlanischer Tatsunootoshigo – Aktionen/ })).toBeVisible();
 
-  // Rückgängig: Suche erneut offen, Tatsu nicht mehr auf der Hand
-  await page.getByRole("button", { name: "Rückgängig" }).click();
+  // Einzelschritt zurück: Suche erneut offen, Tatsu nicht mehr auf der Hand
+  await page.getByRole("button", { name: "Einzelschritt rückgängig" }).click();
   await settle(page);
   await expect(prompt(page)).toContainText("Mementotlanischer Tatsunootoshigo");
   await expect(page.getByRole("button", { name: /Mementotlanischer Tatsunootoshigo – Aktionen/ })).toHaveCount(0);
+
+  // Ganze Aktion zurück (aus dem offenen Auswahlfenster heraus): Enghexe wieder auf der Hand, Feld leer
+  await prompt(page).getByRole("button", { name: "Aktion abbrechen und rückgängig" }).click();
+  await settle(page);
+  await expect(page.getByRole("button", { name: /^Mementotlanische Enghexe – Aktionen/ })).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Monsterzone \d: Mementotlanische Enghexe/ })).toHaveCount(0);
 });
 
 test("Touch: Normalbeschwörung offen in Angriff, Feldzauber offen aktiviert (kein Geisterklick)", async ({ page }) => {
@@ -215,4 +233,15 @@ test("Touch: Normalbeschwörung offen in Angriff, Feldzauber offen aktiviert (ke
   const card = page.getByRole("button", { name: /^Monsterzone \d: Mementotlanische Enghexe/ }).locator(".duel-card");
   await expect(card).not.toHaveClass(/facedown/);
   await expect(card).not.toHaveClass(/\bdef\b/);
+});
+
+test("Hintergrund wählen (bleibt nach Neuladen)", async ({ page }) => {
+  await page.getByRole("button", { name: "Duell-Menü" }).click();
+  await page.getByRole("radio", { name: "Arkana" }).click();
+  await page.getByRole("button", { name: "Schließen" }).click();
+  await expect(page.locator(".duel")).toHaveAttribute("data-bg", "arkana");
+  await shot(page, "31-hintergrund-arkana");
+  await checkLayout(page);
+  await page.reload();
+  await expect(page.locator(".duel")).toHaveAttribute("data-bg", "arkana", { timeout: 30_000 });
 });

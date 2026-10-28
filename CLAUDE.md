@@ -20,7 +20,8 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - [x] Schritt 4: Duell-UI mobil (Hoch + Quer): Spielfeld mit Kartenbildern, Hand-Leiste, leuchtende Aktionen,
       Auswahlfenster für alle 21 Anfragen, Kette, Verlauf, Stapelansicht, Rückgängig, Duell-Start mit Testhand/Seed.
       Abnahme-Combo komplett über die Oberfläche als Playwright-Test (hoch + quer).
-- [ ] Schritt 5: Rückgängig + Combo-Protokoll
+- [x] Schritt 5: Combo-Protokoll (kompakt, kopierbar, `engine/combolog.ts`), Rückgängig pro Aktion und pro
+      Schritt (auch aus offenem Auswahlfenster), Gegnerhand im Verlauf verdeckt, wählbare Duell-Hintergründe.
 - [ ] Schritt 6: PWA + Android-APK
 - [ ] Schritt 7: Gegner-Antworten, Tauri-EXE, CI
 
@@ -30,8 +31,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Optionale Einzel-Auslöser kommen als `SELECT_EFFECTYN`; leere `SELECT_CHAIN` werden auto-gepasst.
 - `setcode` aus cards.cdb als BigInt lesen (64 Bit).
 - Kern mischt beim Start nicht → `DuelSession` mischt mit Seed (Host-Aufgabe wie beim EDOPro-Server).
-- ocgcore-wasm 0.1.6 hat einen SORT_CARD-Fehler → `patches/ocgcore-wasm+0.1.6.patch` (postinstall). Bei
-  Versionswechsel prüfen, ob der Patch noch nötig ist (Test „Karten sortieren“).
+- ocgcore-wasm 0.1.6: Patch `patches/ocgcore-wasm+0.1.6.patch` (postinstall) behebt SORT_CARD und liest
+  MOVE.reason (vom Wrapper verworfen, fürs Protokoll nötig). Bei Versionswechsel prüfen (Tests „Karten sortieren“,
+  Combo-Protokoll).
 - Antwortprotokoll enthält nur Nutzerentscheidungen; Auto-Antworten (leere Fenster, Dummy) sind deterministisch.
 - UI-Regel: Komponenten nie je nach Ausrichtung austauschen, nur per CSS-Klasse umgestalten. Dann bleibt beim
   Drehen alles eingehängt (Eingaben, Scroll, offene Dialoge). Reiter im Hochformat: inaktiver Bereich
@@ -55,6 +57,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Tippen immer über `click` auslösen, nie über `pointerup` (`usePress`): Sonst trifft der nachfolgende
   Touch-Klick einen Knopf im gerade geöffneten Menü („Geisterklick“ → ungewolltes „Setzen“). Duell-Tests
   tippen deshalb mit `.tap()` statt `.click()`.
+- „Aktion zurück“ = bis vor die letzte Main/Battle-Phase-Wahl (`engine/undo.ts`); „Schritt zurück“ = eine Antwort.
+- Einstellungen fürs Gerät (Hintergrund, Seitenleiste) in localStorage (`app/settings.ts`); Hintergründe sind
+  reine CSS-Verläufe (keine Fremdgrafiken).
 - Vorschaubilder in Knöpfen `aria-hidden`, sonst landet der Alt-Text im Knopfnamen.
 - Prompt-Modell (`prompts.ts`) ist die einzige Stelle, die Kern-Anfragen in Auswahlmöglichkeiten übersetzt –
   Konsole, Tests und spätere UI nutzen es gemeinsam.

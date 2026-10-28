@@ -12,7 +12,8 @@ export function describeMessage(msg: OcgMessage, data: GameData, me: 0 | 1): str
     case OcgMessageType.NEW_PHASE:
       return `[${phaseName(msg.phase)}]`;
     case OcgMessageType.DRAW:
-      return `${who(msg.player)} zieht ${msg.drawn.map((c) => name(c.code)).join(", ")}`;
+      // Gegnerhand bleibt verdeckt – auch im Verlauf.
+      return msg.player === me ? `Du ziehst ${msg.drawn.map((c) => name(c.code)).join(", ")}` : `Gegner zieht ${msg.drawn.length} Karte${msg.drawn.length === 1 ? "" : "n"}`;
     case OcgMessageType.SUMMONING:
       return `Normalbeschwörung: ${name(msg.code)}`;
     case OcgMessageType.SPSUMMONING:
@@ -32,10 +33,11 @@ export function describeMessage(msg: OcgMessage, data: GameData, me: 0 | 1): str
       const where = (l: { location: number; sequence: number; controller: number }) =>
         (l.controller !== me ? "Gegner-" : "") + (l.location & (OcgLocation.MZONE | OcgLocation.SZONE) ? zoneName(l.location, l.sequence) : locationName(l.location));
       if (!from.location) return null; // neu erschaffene Karten (Spielmarken)
+      if (from.controller !== me && from.location === OcgLocation.DECK && to.location === OcgLocation.HAND) return null; // verdeckt
       return `  ${name(msg.card)}: ${where(from)} → ${to.location ? where(to) : "aus dem Spiel"}`;
     }
     case OcgMessageType.SET:
-      return `Gesetzt: ${name(msg.code)}`;
+      return msg.controller === me ? `Gesetzt: ${name(msg.code)}` : "Gegner setzt eine Karte";
     case OcgMessageType.DAMAGE:
       return `${who(msg.player)}: −${msg.amount} LP`;
     case OcgMessageType.RECOVER:

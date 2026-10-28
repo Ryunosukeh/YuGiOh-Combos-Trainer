@@ -12,7 +12,7 @@ import { useLayout } from "../ui/hooks";
 
 export function PromptPanel({ decision }: { decision: Decision }) {
   const { data, set } = useApp();
-  const { minimized, setUi, respond, busy, rejected, log } = useDuel();
+  const { minimized, setUi, respond, busy, rejected, log, undoAction, view } = useDuel();
   const layout = useLayout();
   const prompt = useMemo(() => (data ? buildPrompt(decision.msg, { data, hint: decision.hint }) : null), [decision, data]);
   if (!prompt || !data) return null;
@@ -29,6 +29,7 @@ export function PromptPanel({ decision }: { decision: Decision }) {
     <section className={`prompt ${layout}`} role="dialog" aria-label={`${who}${prompt.title}`}>
       <header className="sheet-head">
         <h2>{who}{prompt.title}</h2>
+        <button className="btn small" onClick={() => undoAction()} disabled={busy || !view?.steps} aria-label="Aktion abbrechen und rückgängig" title="Ganze Aktion zurücknehmen">↶</button>
         <button className="btn small" onClick={() => setUi({ minimized: true })}>Feld ansehen</button>
       </header>
       {rejected && <p className="error small prompt-error" role="alert">Der Regelkern hat diese Auswahl abgelehnt – bitte anders wählen.</p>}

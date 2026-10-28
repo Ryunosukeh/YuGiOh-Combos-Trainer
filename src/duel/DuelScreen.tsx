@@ -10,12 +10,14 @@ import { ConfirmDialog, Sheet } from "../ui/Sheet";
 import { CardDetail } from "../screens/CardDetail";
 import { fieldActions } from "./actions";
 import { Field } from "./Field";
-import { CardMenu, ChainView, HandBar, LogView, PileViewer } from "./Parts";
+import { CardMenu, ChainView, HandBar, PileViewer, ProtocolView } from "./Parts";
+import { DUEL_BACKGROUNDS, useSettings } from "../app/settings";
 import { PromptPanel } from "./PromptPanel";
 
 export function DuelScreen() {
   const layout = useLayout();
-  const { data, set, detail, sidebar } = useApp();
+  const { data, set, detail } = useApp();
+  const { sidebar, duelBg, setSettings } = useSettings();
   const duel = useDuel();
   const { view, status, error, busy } = duel;
   const [dialog, setDialog] = useState<"leave" | "menu" | "log" | null>(null);
@@ -50,17 +52,18 @@ export function DuelScreen() {
   );
   const controls = (
     <div className="duel-controls">
-      <button className="btn small" onClick={() => duel.undo()} disabled={busy || !view.steps} aria-label="Rückgängig">↶ Zurück</button>
+      <button className="btn small" onClick={() => duel.undoAction()} disabled={busy || !view.steps} aria-label="Aktion rückgängig">↶ Aktion</button>
+      <button className="btn small" onClick={() => duel.undo()} disabled={busy || !view.steps} aria-label="Einzelschritt rückgängig">↶ Schritt</button>
       {actions.general.map((o, i) => (
         <button key={i} className="btn small primary" disabled={busy} onClick={() => duel.respond(o.response)}>{o.label.replace("→ ", "")}</button>
       ))}
-      <button className="btn small log-btn" onClick={() => setDialog("log")}>Verlauf</button>
+      <button className="btn small log-btn" onClick={() => setDialog("log")}>Protokoll</button>
       <button className="icon-btn" onClick={() => setDialog("menu")} aria-label="Duell-Menü">⋯</button>
     </div>
   );
 
   return (
-    <div className={`duel ${layout} side-${sidebar} ${busy ? "busy" : ""}`}>
+    <div className={`duel ${layout} side-${sidebar} ${busy ? "busy" : ""}`} data-bg={duelBg}>
       <div className="duel-main">
         {info}
         <ChainView view={view} />
@@ -72,7 +75,7 @@ export function DuelScreen() {
         {info}
         {controls}
         <ChainView view={view} />
-        <LogView />
+        <ProtocolView />
       </aside>
 
       {view.result && (
@@ -87,14 +90,24 @@ export function DuelScreen() {
       <PileViewer view={view} actions={actions} />
       {detail !== null && <CardDetail />}
 
-      {dialog === "log" && <Sheet title="Verlauf" onClose={() => setDialog(null)}><LogView /></Sheet>}
+      {dialog === "log" && <Sheet title="Combo-Protokoll" onClose={() => setDialog(null)}><ProtocolView /></Sheet>}
       {dialog === "menu" && (
         <Sheet title="Duell" onClose={() => setDialog(null)}>
           <div className="stack">
             <p className="muted small">Seed {duel.config?.seed} · {view.steps} Entscheidungen · letzte Berechnung {duel.lastMs} ms</p>
             <button className="btn" onClick={() => { setDialog(null); duel.restart(); }}>Neu starten (gleicher Seed, gleiche Hand)</button>
             <button className="btn" onClick={() => { setDialog(null); duel.restart(Math.floor(Math.random() * 2 ** 32)); }}>Neu starten (neu mischen)</button>
-            <button className="btn" onClick={() => set({ sidebar: sidebar === "right" ? "left" : "right" })}>Seitenleiste im Querformat: {sidebar === "right" ? "rechts → links" : "links → rechts"}</button>
+            <div className="field">
+              <span>Hintergrund</span>
+              <div className="bg-choices" role="radiogroup" aria-label="Hintergrund">
+                {DUEL_BACKGROUNDS.map((b) => (
+                  <button key={b.id} role="radio" aria-checked={duelBg === b.id} className={`bg-choice ${duelBg === b.id ? "on" : ""}`} data-bg={b.id} onClick={() => setSettings({ duelBg: b.id })}>
+                    <span className="bg-swatch" aria-hidden="true" />{b.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button className="btn" onClick={() => setSettings({ sidebar: sidebar === "right" ? "left" : "right" })}>Seitenleiste im Querformat: {sidebar === "right" ? "rechts → links" : "links → rechts"}</button>
             <button className="btn danger" onClick={() => setDialog("leave")}>Duell beenden</button>
           </div>
         </Sheet>

@@ -331,3 +331,58 @@ h3 { font-size: 0.95rem; margin: 16px 0 8px; }
 .duel.landscape .duel-side .log-list { flex: 1; min-height: 0; padding: 6px 10px; }
 .duel.landscape .hand { min-height: calc(var(--cw) * 1.05 * 1.46 + 12px); padding-bottom: calc(4px + var(--safe-b)); }
 .duel.landscape .hand-card { width: calc(var(--cw) * 1.05); height: calc(var(--cw) * 1.05 * 1.46); }
+
+/* ---------- Combo-Protokoll ---------- */
+.protocol { display: flex; flex-direction: column; min-height: 0; flex: 1; }
+.protocol-head { display: flex; gap: 6px; padding: 6px 8px; flex: none; }
+.protocol-body { flex: 1; min-height: 0; overflow-y: auto; padding: 0 10px 8px; }
+.sheet .protocol-body { max-height: 60vh; }
+.combo-list { list-style: none; margin: 0; padding: 0; font-size: 0.84rem; line-height: 1.4; display: flex; flex-direction: column; gap: 4px; }
+.combo-list li.turn { font-weight: 700; margin-top: 8px; color: var(--muted); }
+.combo-list li.phase { color: var(--muted); font-style: italic; }
+.combo-list li.opp { color: var(--bad); }
+.step-no { font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+.duel.landscape .duel-side .protocol { border-top: 1px solid var(--line); }
+
+/* ---------- Duell-Hintergründe (reine CSS-Verläufe, keine Fremdgrafiken) ---------- */
+.duel { --zone-line: var(--line); --zone-m: color-mix(in srgb, var(--f-effect) 8%, transparent); --zone-s: color-mix(in srgb, var(--f-spell) 8%, transparent); --pile-bg: var(--panel-2); --pile-fg: var(--muted); }
+.cell { border-color: var(--zone-line); }
+.cell.mzone { background: var(--zone-m); }
+.cell.szone { background: var(--zone-s); }
+.cell.pile { background: var(--pile-bg); }
+.pile-label { color: var(--pile-fg); }
+
+.duel[data-bg="matte"] .duel-main,
+.duel[data-bg="nacht"] .duel-main,
+.duel[data-bg="arkana"] .duel-main,
+.duel[data-bg="holz"] .duel-main { background: var(--mat); }
+.duel[data-bg="matte"], .duel[data-bg="nacht"], .duel[data-bg="arkana"], .duel[data-bg="holz"] {
+  --zone-line: rgb(255 255 255 / 0.32); --zone-m: rgb(255 255 255 / 0.06); --zone-s: rgb(255 255 255 / 0.03);
+  --pile-bg: rgb(0 0 0 / 0.28); --pile-fg: rgb(255 255 255 / 0.75);
+}
+.duel[data-bg="matte"], [data-bg="matte"] .bg-swatch {
+  --mat: radial-gradient(ellipse at 50% 45%, #2a7a5a 0%, #185040 45%, #0c2e25 100%);
+}
+.duel[data-bg="nacht"], [data-bg="nacht"] .bg-swatch {
+  --mat: radial-gradient(circle at 20% 15%, rgb(120 150 255 / 0.18), transparent 40%),
+         radial-gradient(circle at 80% 85%, rgb(170 110 255 / 0.18), transparent 45%),
+         linear-gradient(165deg, #151b3a 0%, #1d1543 55%, #0d0e22 100%);
+}
+.duel[data-bg="arkana"], [data-bg="arkana"] .bg-swatch {
+  --mat: repeating-radial-gradient(circle at 50% 50%, rgb(255 215 140 / 0.07) 0 2px, transparent 2px 46px),
+         radial-gradient(circle at 50% 50%, #4a2a6e 0%, #2a1645 55%, #150a26 100%);
+}
+.duel[data-bg="holz"], [data-bg="holz"] .bg-swatch {
+  --mat: repeating-linear-gradient(92deg, rgb(255 255 255 / 0.035) 0 3px, transparent 3px 19px),
+         repeating-linear-gradient(88deg, rgb(0 0 0 / 0.08) 0 2px, transparent 2px 33px),
+         linear-gradient(180deg, #6b4428 0%, #573620 50%, #46291a 100%);
+}
+.duel[data-bg]:not([data-bg="standard"]) .hand { background: rgb(0 0 0 / 0.35); border-top-color: rgb(255 255 255 / 0.15); }
+.duel[data-bg]:not([data-bg="standard"]) .hand .muted { color: rgb(255 255 255 / 0.8); }
+.duel[data-bg]:not([data-bg="standard"]) .duel-main > .duel-controls .btn:not(.primary) { background: rgb(255 255 255 / 0.9); color: #1b1b1f; }
+.duel[data-bg]:not([data-bg="standard"]) .duel-main > .duel-controls .icon-btn { color: #fff; }
+
+.bg-choices { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.bg-choice { display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 4px 10px; border-radius: var(--radius); border: 2px solid var(--line); background: var(--panel); cursor: pointer; font-weight: 600; }
+.bg-choice.on { border-color: var(--accent); }
+.bg-swatch { width: 28px; height: 28px; border-radius: 6px; flex: none; background: var(--mat, var(--panel-2)); border: 1px solid var(--line); }

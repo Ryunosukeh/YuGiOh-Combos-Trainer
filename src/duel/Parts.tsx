@@ -1,5 +1,6 @@
 // Hand-Leiste, Stapelansicht, Aktionsmenü einer Karte, Kettenanzeige und Verlauf.
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { comboLog, comboLogText } from "../engine/combolog";
 import { OcgLocation } from "ocgcore-wasm";
 import { useApp } from "../app/store";
 import { useDuel } from "../app/duel";
@@ -129,5 +130,50 @@ export function LogView() {
     <ol className="log-list" ref={ref} aria-label="Verlauf">
       {lines.map((l, i) => <li key={i}>{l}</li>)}
     </ol>
+  );
+}
+
+/** Combo-Protokoll (kompakt, kopierbar) mit Umschalter auf den ausführlichen Verlauf. */
+export function ProtocolView() {
+  const { log, view } = useDuel();
+  const data = useApp((s) => s.data);
+  const [details, setDetails] = useState(false);
+  const [copied, setCopied] = useState("");
+  const [manual, setManual] = useState<string | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+  const lines = useMemo(() => (data && view ? comboLog(log, data, view.me) : []), [log, data, view]);
+  useEffect(() => { const el = ref.current; if (el) el.scrollTop = el.scrollHeight; }, [lines.length, details]);
+  if (!data || !view) return null;
+  const copy = async () => {
+    const text = comboLogText(lines);
+    try { await navigator.clipboard.writeText(text); setCopied("Kopiert ✓"); setManual(null); }
+    catch { setCopied("Bitte manuell kopieren"); setManual(text); } // Zwischenablage gesperrt → Text markiert anzeigen
+    setTimeout(() => setCopied(""), 2000);
+  };
+  let n = 0;
+  return (
+    <section className="protocol" aria-label="Combo-Protokoll">
+      <div className="protocol-head">
+        <button className="btn small" onClick={copy}>{copied || "Kopieren"}</button>
+        <button className="btn small" aria-pressed={details} onClick={() => setDetails((d) => !d)}>{details ? "Kompakt" : "Details"}</button>
+      </div>
+      {manual !== null && (
+        <textarea className="export-text" readOnly value={manual} rows={6} aria-label="Protokolltext" ref={(el) => el?.select()} onBlur={() => setManual(null)} />
+      )}
+      <div className="protocol-body" ref={ref}>
+        {details ? <LogView /> : (
+          <ol className="combo-list">
+            {lines.map((l, i) => {
+              if (l.kind === "turn") n = 0;
+              return (
+                <li key={i} className={`${l.kind} ${l.player === view.me ? "" : "opp"}`}>
+                  {l.kind === "action" ? <><span className="step-no">{++n}.</span> {l.text}</> : l.text}
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </div>
+    </section>
   );
 }

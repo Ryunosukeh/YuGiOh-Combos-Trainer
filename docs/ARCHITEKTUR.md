@@ -334,3 +334,15 @@ Erledigt nach Schritt 2:
   `code << 20 | n`. Erst die Oberflächentests haben das gezeigt (Engine-Tests verglichen nur die unteren Bits).
 - **Befund:** Mit Schnellzaubern/Handtraps auf der Hand fragt der Kern nach jeder Auflösung. Lösung wie EDOPro:
   Fenster ohne passende Effekte (`spe_count = 0`) automatisch passen; umschaltbar beim Duellstart.
+
+## 15. Schritt 5 (Combo-Protokoll, Rückgängig)
+
+- **Protokoll:** eine Zeile pro Aktion bzw. aufgelöstem Effekt, Teilsätze in Ereignisreihenfolge
+  („zerstört sich, SS Stab“), Kosten in Klammern, Fusions-/Synchro-/Xyz-/Link-Material erkannt. Grundlage ist
+  der Bewegungsgrund aus MSG_MOVE – den verwirft ocgcore-wasm 0.1.6, der Patch liest ihn mit
+  (Fehlermeldung ergänzt). Gegnerhand und gegnerische gesetzte Karten bleiben verdeckt.
+- **Rückgängig:** „↶ Aktion“ nimmt eine komplette Aktion inkl. Zonenwahl/Zielen/Auslösern zurück,
+  „↶ Schritt“ eine einzelne Antwort. Im offenen Auswahlfenster gibt es „↶“ in der Kopfzeile, weil das
+  Fenster die Knöpfe sonst verdeckt (Befund aus den Oberflächentests).
+- **Hintergründe:** Schlicht, Spielmatte (Standard), Nachtblau, Arkana, Holztisch – CSS-Verläufe, Zonen auf
+  dunklen Matten mit hellen Rahmen.
