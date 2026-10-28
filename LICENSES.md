@@ -11,6 +11,7 @@ AGPL-lizenzierten Regelkern einbindet. Gedacht für private Nutzung.
 | Distribution (DE-Systemtexte) | https://github.com/ProjectIgnis/Distribution | AGPL-3.0 | `strings.conf` beim Build geladen | nein |
 | BabelCDB (`cards.cdb`) | https://github.com/ProjectIgnis/BabelCDB | **keine Lizenzangabe** | beim Build geladen, nur lokal | **nein – nicht committen** |
 | LFLists (Banlisten) | https://github.com/ProjectIgnis/LFLists | **keine Lizenzangabe** | beim Build geladen, nur lokal | **nein – nicht committen** |
+| Yugipedia (DE-Namen/-Texte ab ~2023) | https://yugipedia.com | **CC BY-SA 4.0** (Namensnennung: Yugipedia-Mitwirkende) | beim Build über die Semantic-MediaWiki-API, max. 1 Anfrage/s | nein |
 | YGOPRODeck API (DE-Namen, Bilder) | https://ygoprodeck.com/api-guide/ | Nutzungsbedingungen von YGOPRODeck; Inhalte © Konami | einmal laden, lokal cachen, kein Hotlinking | nein |
 
 Kartennamen, Kartentexte und Kartenbilder sind © Konami Digital Entertainment. Sie werden nur lokal

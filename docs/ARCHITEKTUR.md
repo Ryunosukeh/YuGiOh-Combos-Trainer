@@ -161,6 +161,12 @@ laden ist unzumutbar.
 > Von den Karten mit TCG-Erscheinungsjahr 2023–2026 haben **3 von ~2.300** einen deutschen Namen – das ganze
 > Memento-Testdeck fehlt. Gesamt: 11.979 von 14.845 Karten mit deutschem Text. Für den DE-Massenimport
 > braucht es eine zweite Quelle, siehe §12 „Offen“.
+>
+> **Gelöst:** Yugipedia ergänzt die Lücken (Semantic-MediaWiki-Abfrage über den Passcode, seitenweise
+> nach Passcode geblättert, da Yugipedia Offsets und Oder-Abfragen begrenzt). Ergebnis: 14.489 von 14.845
+> Karten mit deutschem Text; alle 37 Namen der Abnahme-Liste werden wörtlich erkannt (DE oder EN).
+> Der Rest sind vor allem OCG-exklusive Karten. Yugipedia-Inhalte stehen unter CC BY-SA 4.0 → Namensnennung
+> in LICENSES.md und später in der App.
 
 Regeln laut YGOPRODeck-Doku (aus meinem Wissen, **in dieser Umgebung nicht live verifiziert**):
 - Rate-Limit 20 Requests/Sekunde, bei Überschreitung Sperre (1 h).
@@ -291,8 +297,8 @@ Befunde:
 6. Hinweise (`HINT`/SELECTMSG) sind je nach Anfrage Systemtext, Kartentext (`code*16+n`) oder ein
    reiner Kartencode – `describeString` behandelt alle drei.
 
-Offen:
-- **Deutsche Kartennamen für Karten ab 2023.** Kandidaten (brauchen Netzfreigabe in der Cloud-Umgebung):
+Erledigt nach Schritt 2:
+- **Deutsche Kartennamen für Karten ab 2023** → Yugipedia (Option a, siehe §5). Geprüfte Kandidaten waren:
   (a) Yugipedia (Semantic-MediaWiki-API, Inhalte CC BY-SA 4.0, hat deutsche TCG-Namen),
   (b) db.ygoresources.com (Daten aus der offiziellen Konami-Datenbank, alle Sprachen, keine Lizenzangabe),
   (c) offizielle Konami-Kartendatenbank (Scraping, langsam, rechtlich am heikelsten).

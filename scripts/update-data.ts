@@ -113,6 +113,60 @@ function germanDesc(c: YpdCard) {
   return c.desc;
 }
 
+// ---------- Deutsche Texte, Ergänzung (Yugipedia, CC BY-SA 4.0) ----------
+// YGOPRODeck hat deutsche Texte nur bis ~2022. Yugipedia füllt die Lücken, Zuordnung über den Passcode.
+const YUGIPEDIA = "https://yugipedia.com/api.php";
+const USER_AGENT = "YuGiOh-Combos-Trainer/0.1 (private; https://github.com/Ryunosukeh/YuGiOh-Combos-Trainer)";
+interface WikiEntry { name: string; desc: string }
+
+function cleanWikiText(t: string) {
+  return t.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]+>/g, "").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").trim();
+}
+
+async function fillFromYugipedia(cards: Map<number, CardRecord>): Promise<{ added: number; cached: number }> {
+  const file = path.join(CACHE, "yugipedia-de.json");
+  let cache: { fetchedAt: string; entries: Record<string, WikiEntry> } = existsSync(file)
+    ? JSON.parse(readFileSync(file, "utf8"))
+    : { fetchedAt: "1970-01-01", entries: {} };
+  const ageDays = (Date.now() - Date.parse(cache.fetchedAt)) / 86400000;
+  if (FETCH && ageDays > 6) {
+    // Alle Karten mit deutschem Namen, seitenweise nach Passcode (Yugipedia begrenzt Offsets und Oder-Abfragen).
+    console.log("  lade deutsche Namen von Yugipedia …");
+    try {
+      const entries: Record<string, WikiEntry> = {};
+      let from = "00000000";
+      for (let page = 0; page < 100; page++) {
+        const query = `[[German name::+]][[Password::>${from}]]|?Password|?German name|?German lore|limit=500|sort=Password`;
+        const res = await fetch(`${YUGIPEDIA}?action=ask&format=json&query=${encodeURIComponent(query)}`, { headers: { "User-Agent": USER_AGENT } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as { query?: { results?: Record<string, { printouts: Record<string, string[]> }> | [] } };
+        const rows = Object.values(json.query?.results ?? {});
+        let last = from;
+        for (const r of rows) {
+          const pw = r.printouts.Password?.[0];
+          const name = r.printouts["German name"]?.[0];
+          if (!pw) continue;
+          if (pw > last) last = pw;
+          if (name && !entries[Number(pw)]) entries[Number(pw)] = { name: cleanWikiText(name), desc: cleanWikiText(r.printouts["German lore"]?.[0] ?? "") };
+        }
+        if (rows.length < 500 || last === from) break;
+        from = last;
+        await new Promise((r) => setTimeout(r, 1000)); // höflich: max. 1 Anfrage pro Sekunde
+      }
+      cache = { fetchedAt: new Date().toISOString(), entries };
+      writeFileSync(file, JSON.stringify(cache));
+    } catch (e) {
+      console.warn(`  WARNUNG: Yugipedia nicht erreichbar (${e instanceof Error ? e.message : e}) – nutze Cache`);
+    }
+  }
+  let added = 0;
+  for (const c of cards.values()) {
+    const e = cache.entries[c.id] ?? (c.alias ? cache.entries[c.alias] : undefined);
+    if (!c.nameDe && e) { c.nameDe = e.name; if (e.desc) c.descDe = e.desc; added++; }
+  }
+  return { added, cached: Object.keys(cache.entries).length };
+}
+
 // ---------- Skripte ----------
 function buildScriptPack(scriptsDir: string) {
   const files: [string, string][] = [];
@@ -179,6 +233,9 @@ async function main() {
     const de = german.map.get(c.id) ?? (c.alias ? german.map.get(c.alias) : undefined);
     if (de) { c.nameDe = de.name; c.descDe = germanDesc(de); cardsDe++; }
   }
+  const wiki = await fillFromYugipedia(cards);
+  cardsDe += wiki.added;
+  console.log(`  deutsche Texte: ${cardsDe - wiki.added} von YGOPRODeck, ${wiki.added} ergänzt von Yugipedia (${wiki.cached} im Cache)`);
 
   console.log("Packe Skripte …");
   const { pack, index } = buildScriptPack(src.CardScripts.dir);
@@ -214,6 +271,7 @@ async function main() {
     sources: {
       ...Object.fromEntries(Object.entries(src).map(([n, s]) => [n, { url: REPOS[n as keyof typeof REPOS], commit: s.commit, date: s.date }])),
       YGOPRODeck: { url: `${YGOPRODECK}/cardinfo.php?language=de`, note: `Datenbank-Version ${german.dbVersion}` },
+      Yugipedia: { url: "https://yugipedia.com", note: `CC BY-SA 4.0 · ${wiki.added} deutsche Texte ergänzt` },
     },
     counts: { cards: cardList.length, cardsDe, scripts: Object.keys(index).length },
     files,
@@ -225,7 +283,7 @@ async function main() {
   console.log(`  ${cardList.length} Karten (${cardsDe} mit deutschem Text), ${Object.keys(index).length} Skripte, ${lflists.length} Banlisten`);
   for (const [n, f] of Object.entries(files)) console.log(`  ${n.padEnd(18)} ${mb(f.bytes)}`);
   if (process.env.GITHUB_ACTIONS)
-    console.log(`::notice title=Datenpaket ${manifest.version}::${cardList.length} Karten, davon ${cardsDe} mit deutschem Text (YGOPRODeck ${german.dbVersion}), ${Object.keys(index).length} Skripte`);
+    console.log(`::notice title=Datenpaket ${manifest.version}::${cardList.length} Karten, davon ${cardsDe} mit deutschem Text (YGOPRODeck ${german.dbVersion}, Yugipedia ${wiki.added}), ${Object.keys(index).length} Skripte`);
 }
 
 main().catch((e) => {

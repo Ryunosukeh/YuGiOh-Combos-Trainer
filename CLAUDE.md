@@ -45,9 +45,14 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - `pkill -f <muster>` nicht verwenden, wenn das Muster in der eigenen Befehlszeile steht.
 
 ## Offene Punkte
-- Deutsche Kartennamen fehlen bei YGOPRODeck für alle Karten ab ~2023 (ARCHITEKTUR.md §5, §12).
-- GitHub Pages muss im Repo einmal auf „GitHub Actions“ gestellt werden (Settings → Pages).
-- Fehlermeldung an ocgcore-wasm (docs/upstream/) erst nach Freigabe einreichen.
+- Fehlermeldung an ocgcore-wasm (docs/upstream/) ist freigegeben, aber aus der Session nicht einreichbar
+  (fremdes Repo) → Nutzer reicht per vorausgefülltem Link ein. Danach Issue-Link hier eintragen.
+
+## Daten
+- Deutsche Texte: YGOPRODeck zuerst, Lücken (Karten ab ~2023) aus Yugipedia (CC BY-SA 4.0), Cache in
+  `.cache/yugipedia-de.json`, Auffrischung höchstens alle 6 Tage. Yugipedia: Passcodes 8-stellig mit
+  führenden Nullen; Oder-Abfragen max. ~10 Werte; Offsets über ~10.000 springen zurück → nach Passcode blättern.
+- Live-Seite: https://ryunosukeh.github.io/YuGiOh-Combos-Trainer/ (aus dieser Cloud-Umgebung nicht abrufbar).
 
 ## Entscheidungen aus ARCHITEKTUR.md §9
 - E1 Daten-Bundle: wird per GitHub Action gebaut und mit der Web-App auf GitHub Pages ausgeliefert (nicht in die Git-Historie committet). Repo ist öffentlich → Pages kostenlos.
