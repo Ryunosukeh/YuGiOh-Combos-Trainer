@@ -17,7 +17,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
       (`src/engine/`), Konsole (`npm run duel`), Browser-Systemcheck, 7 Tests inkl. Abnahme-Combo.
 - [x] Schritt 3: Kartensuche (DE/EN, unscharf), Kartenansicht, Deckbuilder (Main/Extra/Side, TCG-Banliste),
       Massen-Import mit Vorschau, .ydk/ydke, Deckverwaltung (IndexedDB), Hoch-/Querformat. 30 Vitest + 10 Playwright.
-- [ ] Schritt 4: Duell-UI mobil (Hoch + Quer)
+- [x] Schritt 4: Duell-UI mobil (Hoch + Quer): Spielfeld mit Kartenbildern, Hand-Leiste, leuchtende Aktionen,
+      Auswahlfenster für alle 21 Anfragen, Kette, Verlauf, Stapelansicht, Rückgängig, Duell-Start mit Testhand/Seed.
+      Abnahme-Combo komplett über die Oberfläche als Playwright-Test (hoch + quer).
 - [ ] Schritt 5: Rückgängig + Combo-Protokoll
 - [ ] Schritt 6: PWA + Android-APK
 - [ ] Schritt 7: Gegner-Antworten, Tauri-EXE, CI
@@ -41,6 +43,16 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Import-Status: exakt (normalisierter Name DE/EN) = sicher; sonst unsicher mit vorausgewähltem besten
   Vorschlag (Ähnlichkeit ≥ 0,45, auch Namensanfang); darunter „nicht gefunden“.
 - Banliste: Plus sperrt nur bei 3 Exemplaren; Verstöße gegen die Liste meldet die Deckprüfung.
+- Beschreibungen des Kerns: `aux.Stringid(code, n)` = `code << 20 | n` (Project Ignis utility.lua), Code 0 =
+  Systemtext n. Manche Hinweise sind reine Kartencodes. → `splitDescription`/`describeString` in data.ts.
+- Effekttexte (`str1..16`) gibt es nur englisch → Anzeige „Effekt n: …“, passend zu ①② im deutschen Kartentext.
+- Duell läuft im Web Worker (`src/worker/`); Oberfläche baut Prompts selbst aus der Nachricht (Funktionen sind
+  nicht übertragbar). Feld = Abfrage nach jeder Entscheidung (`engine/view.ts`), nicht aus MOVE nachgebaut.
+- Duell-Sicherung: Konfiguration + Antworten in sessionStorage → Neuladen spielt neu ab.
+- Kettenfenster: Standard „auto“ wie EDOPro (nur fragen, wenn `spe_count > 0`), wählbar „all“. Teil der
+  Duell-Konfiguration, damit Neuabspielen deterministisch bleibt.
+- Zonenwahl: Auswahlfenster startet eingeklappt, leuchtende Zone auf dem Feld antippen.
+- Vorschaubilder in Knöpfen `aria-hidden`, sonst landet der Alt-Text im Knopfnamen.
 - Prompt-Modell (`prompts.ts`) ist die einzige Stelle, die Kern-Anfragen in Auswahlmöglichkeiten übersetzt –
   Konsole, Tests und spätere UI nutzen es gemeinsam.
 
@@ -50,6 +62,8 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - `src/ui/` – Sheet (Bottom Sheet hoch / Seitenpanel quer), Hooks (Layout, langes Drücken, Scroll), Kartenbild
 - `src/cards/` – Typzeile DE, Suche (MiniSearch + Levenshtein) · `src/deck/` – Import, Prüfung, .ydk, ydke
 - `tests/e2e/` – Playwright in 360×800 und 800×360, Screenshots nach `test-results/screens/`
+- `src/duel/` – Duell-Bildschirm, Feld, Hand, Auswahlfenster, Duell-Start · `src/worker/` – Duell-Worker
+- `src/app/duel.ts` – Duell-Zustand (Worker-Kommunikation, Sicherung)
 - `src/data/` – Bundle-Format, Node-Lader · `src/web/` – Browser-Lader, Kern im Browser
 - `src/engine/` – Sitzung, Prompts, Autopilot, Texte · `src/deck/` – .ydk
 - `src/fixtures/memento.ts` – Testdeck + Abnahme-Combo (Tests und Systemcheck)

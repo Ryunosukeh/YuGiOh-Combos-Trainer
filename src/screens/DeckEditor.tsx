@@ -29,6 +29,7 @@ export function DeckEditor({ id }: { id: string }) {
         <button className="title-btn" onClick={() => setDialog("rename")} title="Umbenennen">{deck.name}</button>
         <button className="btn small" onClick={() => set({ import: { target: { kind: "deck", id, mode: "add" }, text: "", preview: null, deckName: deck.name } })}>Import</button>
         <button className="btn small" onClick={() => setDialog("export")}>Export</button>
+        <button className="btn small primary" onClick={() => set({ duelSetup: id, detail: null })} disabled={!deck.main.length}>Duell</button>
       </header>
 
       <nav className="tabs" role="tablist" aria-label="Bereich">

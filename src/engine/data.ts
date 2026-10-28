@@ -37,22 +37,22 @@ export function cardName(data: GameData, code: number, lang: Lang = "de"): strin
 }
 
 /**
- * Text zu einer Effekt-/Hinweisbeschreibung des Kerns.
- * `desc` = Kartencode * 16 + Index (aux.Stringid) oder eine Systemstring-Nummer.
+ * Zerlegt eine Beschreibung des Kerns. Project Ignis kodiert `aux.Stringid(code, n)` als `code << 20 | n`
+ * (utility.lua); Code 0 bedeutet Systemtext Nummer n.
  */
-export function describeString(data: GameData, desc: bigint | number, lang: Lang = "de"): string {
+export function splitDescription(desc: bigint | number): { code: number; index: number } {
   const d = BigInt(desc);
-  if (d < 16000n) { // wie EDOPro: unter (1000 << 4) sind Systemstrings
-    const n = String(d);
-    return data.strings[lang].system[n] ?? data.strings.en.system[n] ?? `Text ${n}`;
-  }
-  const code = Number(d >> 4n);
-  const idx = Number(d & 0xfn);
+  return { code: Number(d >> 20n), index: Number(d & 0xfffffn) };
+}
+
+/** Text zu einer Effekt-/Hinweisbeschreibung des Kerns (Systemtext, Kartentext str1..16 oder Kartenname). */
+export function describeString(data: GameData, desc: bigint | number, lang: Lang = "de"): string {
+  const { code, index } = splitDescription(desc);
+  const system = (n: number) => data.strings[lang].system[String(n)] ?? data.strings.en.system[String(n)];
+  if (code === 0) return system(index) ?? `Text ${index}`;
   const c = data.cards.get(code);
-  const s = c?.strings[idx];
-  if (s) return s;
-  if (c) return `${cardName(data, code, lang)} (Effekt ${idx + 1})`;
+  if (c) return c.strings[index] || `${cardName(data, code, lang)} (Effekt ${index + 1})`;
   // Manche Hinweise enthalten direkt einen Kartencode (z. B. bei Zonen- oder Zahlenwahl).
-  if (data.cards.has(Number(d))) return cardName(data, Number(d), lang);
-  return `Text ${d}`;
+  if (data.cards.has(Number(desc))) return cardName(data, Number(desc), lang);
+  return `Text ${desc}`;
 }

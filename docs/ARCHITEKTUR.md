@@ -319,3 +319,18 @@ Erledigt nach Schritt 2:
 - **Bilder:** siehe CLAUDE.md. Bewusster Kompromiss im Browser: Service Worker speichert opake Antworten;
   Chrome rechnet diese mit Polsterung auf das Speicherkontingent an. Bei ~100 Karten pro Deck unkritisch.
   Die Android-App lädt Bilder in Schritt 6 nativ herunter.
+
+## 14. Schritt 4 (Duell-Oberfläche)
+
+- **Feld:** 7 Spalten × 5 Reihen wie am Tisch (Gegner gespiegelt oben, Extra Monster Zonen in der Mitte,
+  Friedhof/Verbannt/Deck/Extra als Stapel). Kartengröße per ResizeObserver aus dem verfügbaren Platz.
+  Gegnerische verdeckte Karten und Hand bleiben verdeckt; eigene verdeckte Karten sind abgedunkelt sichtbar.
+- **Bedienung:** In Main/Battle Phase leuchten Karten mit Aktionen (Hand, Feld, Stapel); Antippen öffnet die
+  Aktionen, langes Drücken die große Kartenansicht. Phasenwechsel als Knöpfe. Alle anderen Anfragen im
+  Auswahlfenster (einklappbar), Zonenwahl direkt auf dem Feld.
+- **Worker:** Kern + Sitzung im Web Worker (66 KB + 0,96 MB WASM); die Oberfläche bekommt nach jeder
+  Entscheidung eine serialisierbare Momentaufnahme (`DuelView`) und die neuen Nachrichten.
+- **Befund:** Die Annahme „Beschreibung = code × 16 + n“ (altes YGOPro) war falsch; Project Ignis nutzt
+  `code << 20 | n`. Erst die Oberflächentests haben das gezeigt (Engine-Tests verglichen nur die unteren Bits).
+- **Befund:** Mit Schnellzaubern/Handtraps auf der Hand fragt der Kern nach jeder Auflösung. Lösung wie EDOPro:
+  Fenster ohne passende Effekte (`spe_count = 0`) automatisch passen; umschaltbar beim Duellstart.

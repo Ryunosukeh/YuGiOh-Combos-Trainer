@@ -23,6 +23,8 @@ function serveBundle(): Plugin {
 export default defineConfig({
   // Relativ, damit die App unter https://<nutzer>.github.io/<repo>/ und in Capacitor funktioniert.
   base: "./",
+  // ES-Module im Worker → dynamische Imports bleiben eigene Dateien (die ungenutzten WASM-Varianten werden nie geladen).
+  worker: { format: "es" },
   plugins: [
     react(),
     serveBundle(),

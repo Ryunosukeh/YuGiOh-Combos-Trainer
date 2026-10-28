@@ -63,6 +63,7 @@ export function DeckList() {
       {dialog?.kind === "menu" && (
         <Sheet title={dialog.deck.name} onClose={() => setDialog(null)}>
           <div className="stack">
+            <button className="btn primary" onClick={() => { setDialog(null); set({ duelSetup: dialog.deck.id }); }} disabled={!dialog.deck.main.length}>Duell starten</button>
             <button className="btn" onClick={() => { open(dialog.deck); }}>Öffnen</button>
             <button className="btn" onClick={() => setDialog({ kind: "rename", deck: dialog.deck })}>Umbenennen</button>
             <button className="btn" onClick={async () => { await copyDeck(dialog.deck.id); setDialog(null); }}>Kopieren</button>

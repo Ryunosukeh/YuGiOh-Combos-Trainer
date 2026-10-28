@@ -5,7 +5,7 @@ import {
   type OcgCardLoc, type OcgMessage, type OcgResponse,
 } from "ocgcore-wasm";
 import { toOcgCardData } from "../data/types";
-import { cardName, describeString, type GameData } from "./data";
+import { cardName, describeString, splitDescription, type GameData } from "./data";
 import { attributeList, positionName, raceList, zoneName } from "./text";
 
 /** Verweis auf eine Karte im Duell (für Hervorhebung/Bild in der UI). */
@@ -102,6 +102,13 @@ export function buildPrompt(msg: OcgMessage, ctx: PromptContext): Prompt | null 
   const { data } = ctx;
   const name = (code: number) => cardName(data, code);
   const desc = (d: bigint) => describeString(data, d);
+  // Effekttexte stammen aus cards.cdb (nur Englisch) → Effektnummer davor, passend zu ①②③ im deutschen Kartentext.
+  const effect = (d: bigint) => {
+    if (!d) return "Karte aktivieren";
+    const { code, index } = splitDescription(d);
+    if (code && data.cards.has(code)) return `Effekt ${index + 1}: ${desc(d)}`;
+    return desc(d);
+  };
   const hintTitle = (fallback: string) => (ctx.hint ? desc(ctx.hint) : fallback);
 
   switch (msg.type) {
@@ -110,7 +117,7 @@ export function buildPrompt(msg: OcgMessage, ctx: PromptContext): Prompt | null 
       const o: MenuOption[] = [];
       msg.summons.forEach((c, i) => o.push({ label: `Normalbeschwörung: ${name(c.code)}`, card: ref(c), tag: "summon", response: { type: T, action: A.SELECT_SUMMON, index: i } }));
       msg.special_summons.forEach((c, i) => o.push({ label: `Spezialbeschwörung: ${name(c.code)}`, card: ref(c), tag: "spsummon", response: { type: T, action: A.SELECT_SPECIAL_SUMMON, index: i } }));
-      msg.activates.forEach((c, i) => o.push({ label: `Aktivieren: ${name(c.code)} – ${desc(c.description)}`, card: ref(c), tag: "activate", response: { type: T, action: A.SELECT_ACTIVATE, index: i } }));
+      msg.activates.forEach((c, i) => o.push({ label: `Aktivieren: ${name(c.code)} – ${effect(c.description)}`, card: ref(c), tag: "activate", response: { type: T, action: A.SELECT_ACTIVATE, index: i } }));
       msg.monster_sets.forEach((c, i) => o.push({ label: `Monster setzen: ${name(c.code)}`, card: ref(c), tag: "mset", response: { type: T, action: A.SELECT_MONSTER_SET, index: i } }));
       msg.spell_sets.forEach((c, i) => o.push({ label: `Setzen: ${name(c.code)}`, card: ref(c), tag: "sset", response: { type: T, action: A.SELECT_SPELL_SET, index: i } }));
       msg.pos_changes.forEach((c, i) => o.push({ label: `Position ändern: ${name(c.code)}`, card: ref(c), tag: "repos", response: { type: T, action: A.SELECT_POS_CHANGE, index: i } }));
@@ -123,7 +130,7 @@ export function buildPrompt(msg: OcgMessage, ctx: PromptContext): Prompt | null 
       const T = OcgResponseType.SELECT_BATTLECMD, A = SelectBattleCMDAction;
       const o: MenuOption[] = [];
       msg.attacks.forEach((c, i) => o.push({ label: `Angriff: ${name(c.code)}${c.can_direct ? " (direkt möglich)" : ""}`, card: ref(c), tag: "attack", response: { type: T, action: A.SELECT_BATTLE, index: i } }));
-      msg.chains.forEach((c, i) => o.push({ label: `Aktivieren: ${name(c.code)} – ${desc(c.description)}`, card: ref(c), tag: "activate", response: { type: T, action: A.SELECT_CHAIN, index: i } }));
+      msg.chains.forEach((c, i) => o.push({ label: `Aktivieren: ${name(c.code)} – ${effect(c.description)}`, card: ref(c), tag: "activate", response: { type: T, action: A.SELECT_CHAIN, index: i } }));
       if (msg.to_m2) o.push({ label: "→ Main Phase 2", tag: "phase", response: { type: T, action: A.TO_M2, index: null } });
       if (msg.to_ep) o.push({ label: "→ End Phase", tag: "phase", response: { type: T, action: A.TO_EP, index: null } });
       return { kind: "menu", title: "Battle Phase – Aktion wählen", options: o };
@@ -155,7 +162,7 @@ export function buildPrompt(msg: OcgMessage, ctx: PromptContext): Prompt | null 
       };
     case OcgMessageType.SELECT_CHAIN: {
       const o: MenuOption[] = msg.selects.map((c, i) => ({
-        label: `${name(c.code)} – ${desc(c.description)}`, card: ref(c), tag: "activate",
+        label: `${name(c.code)} – ${effect(c.description)}`, card: ref(c), tag: "activate",
         response: { type: OcgResponseType.SELECT_CHAIN, index: i },
       }));
       if (!msg.forced) o.push({ label: "Nicht aktivieren", tag: "pass", response: { type: OcgResponseType.SELECT_CHAIN, index: null } });

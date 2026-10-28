@@ -4,6 +4,11 @@ Quelle: `ygopro-core/common.h` (Stand `baa3881`), Parser: `ocgcore-wasm` 0.1.6 (
 
 Legende Spalte „UI“: ⬜ offen · ✅ umgesetzt · ➖ keine eigene UI nötig.
 
+**Stand Schritt 4:** Alle 21 Anfragetypen sind in der mobilen Duell-Oberfläche bedienbar
+(`src/duel/`): Main/Battle Phase über Feld und Hand (leuchtende Karten, Aktionsmenü), Zonenwahl durch
+Antippen der leuchtenden Zone, alles andere im Auswahlfenster (Menü, Kartenraster, Reihenfolge,
+Zählmarken, Kartennamen-Suche). Getestet über die komplette Abnahme-Combo in Playwright.
+
 **Stand Schritt 2:** Alle 21 Anfragetypen sind im UI-neutralen Auswahlmodell umgesetzt
 (`src/engine/prompts.ts`) und in der Konsole bedienbar (`npm run duel`). Die Spalte „UI“ bezieht sich auf
 die mobile Oberfläche (Schritt 4). Für Informations-Nachrichten gibt es Textzeilen in `src/engine/describe.ts`.
@@ -21,27 +26,27 @@ Spalte „Parser“: ✅ = von ocgcore-wasm typisiert geliefert.
 
 | Nr | Nachricht | Bedeutung | Parser | UI |
 |---|---|---|---|---|
-| 10 | SELECT_BATTLECMD | Kampfphase: angreifen / Effekt / M2 / EP | ✅ | ⬜ |
-| 11 | SELECT_IDLECMD | Main Phase: NS, SS, Setzen, Effekt, Position, BP, EP | ✅ | ⬜ |
-| 12 | SELECT_EFFECTYN | Optionalen Effekt (meist Auslöser) aktivieren? | ✅ | ⬜ |
-| 13 | SELECT_YESNO | Ja/Nein-Frage mit Text | ✅ | ⬜ |
-| 14 | SELECT_OPTION | Effekt-/Optionswahl | ✅ | ⬜ |
-| 15 | SELECT_CARD | Karte(n) wählen (min/max, ggf. abbrechbar) | ✅ | ⬜ |
-| 16 | SELECT_CHAIN | Kettenglied hinzufügen oder passen (oft leer → Auto-Pass) | ✅ | ⬜ |
-| 18 | SELECT_PLACE | Zone wählen (inkl. Extra Monster Zone) | ✅ | ⬜ |
-| 19 | SELECT_POSITION | Kampfposition wählen | ✅ | ⬜ |
-| 20 | SELECT_TRIBUTE | Tribut wählen | ✅ | ⬜ |
-| 21 | SORT_CHAIN | Reihenfolge gleichzeitiger Auslöser | ✅ | ⬜ |
-| 22 | SELECT_COUNTER | Zählmarken entfernen/verteilen | ✅ | ⬜ |
-| 23 | SELECT_SUM | Summen-Auswahl (Stufen, z. B. Ritual/Synchro) | ✅ | ⬜ |
-| 24 | SELECT_DISFIELD | Zone(n) unbrauchbar machen | ✅ | ⬜ |
-| 25 | SORT_CARD | Karten sortieren (z. B. Deckoberseite) | ✅ | ⬜ |
-| 26 | SELECT_UNSELECT_CARD | Mehrfachauswahl mit An-/Abwählen + Fertig | ✅ | ⬜ |
-| 132 | ROCK_PAPER_SCISSORS | Schere-Stein-Papier | ✅ | ⬜ |
-| 140 | ANNOUNCE_RACE | Typ ansagen | ✅ | ⬜ |
-| 141 | ANNOUNCE_ATTRIB | Eigenschaft ansagen | ✅ | ⬜ |
-| 142 | ANNOUNCE_CARD | Kartennamen ansagen (Opcode-Filter) | ✅ | ⬜ |
-| 143 | ANNOUNCE_NUMBER | Zahl ansagen | ✅ | ⬜ |
+| 10 | SELECT_BATTLECMD | Kampfphase: angreifen / Effekt / M2 / EP | ✅ | ✅ |
+| 11 | SELECT_IDLECMD | Main Phase: NS, SS, Setzen, Effekt, Position, BP, EP | ✅ | ✅ |
+| 12 | SELECT_EFFECTYN | Optionalen Effekt (meist Auslöser) aktivieren? | ✅ | ✅ |
+| 13 | SELECT_YESNO | Ja/Nein-Frage mit Text | ✅ | ✅ |
+| 14 | SELECT_OPTION | Effekt-/Optionswahl | ✅ | ✅ |
+| 15 | SELECT_CARD | Karte(n) wählen (min/max, ggf. abbrechbar) | ✅ | ✅ |
+| 16 | SELECT_CHAIN | Kettenglied hinzufügen oder passen (oft leer → Auto-Pass) | ✅ | ✅ |
+| 18 | SELECT_PLACE | Zone wählen (inkl. Extra Monster Zone) | ✅ | ✅ |
+| 19 | SELECT_POSITION | Kampfposition wählen | ✅ | ✅ |
+| 20 | SELECT_TRIBUTE | Tribut wählen | ✅ | ✅ |
+| 21 | SORT_CHAIN | Reihenfolge gleichzeitiger Auslöser | ✅ | ✅ |
+| 22 | SELECT_COUNTER | Zählmarken entfernen/verteilen | ✅ | ✅ |
+| 23 | SELECT_SUM | Summen-Auswahl (Stufen, z. B. Ritual/Synchro) | ✅ | ✅ |
+| 24 | SELECT_DISFIELD | Zone(n) unbrauchbar machen | ✅ | ✅ |
+| 25 | SORT_CARD | Karten sortieren (z. B. Deckoberseite) | ✅ | ✅ |
+| 26 | SELECT_UNSELECT_CARD | Mehrfachauswahl mit An-/Abwählen + Fertig | ✅ | ✅ |
+| 132 | ROCK_PAPER_SCISSORS | Schere-Stein-Papier | ✅ | ✅ |
+| 140 | ANNOUNCE_RACE | Typ ansagen | ✅ | ✅ |
+| 141 | ANNOUNCE_ATTRIB | Eigenschaft ansagen | ✅ | ✅ |
+| 142 | ANNOUNCE_CARD | Kartennamen ansagen (Opcode-Filter) | ✅ | ✅ |
+| 143 | ANNOUNCE_NUMBER | Zahl ansagen | ✅ | ✅ |
 
 Zusätzliche Antwortart ohne eigene Nachricht: `SELECT_CARD_CODES` (Variante von SELECT_CARD).
 
@@ -49,26 +54,26 @@ Zusätzliche Antwortart ohne eigene Nachricht: `SELECT_CARD_CODES` (Variante von
 
 | Nr | Nachricht | Verwendung | Parser | UI |
 |---|---|---|---|---|
-| 1 | RETRY | Ungültige Antwort → Fehler anzeigen, erneut fragen | ✅ | ⬜ |
-| 2 | HINT | Hinweistexte (Systemstring/Kartenstring) für die nächste Auswahl | ✅ | ⬜ |
-| 5 | WIN | Duellende | ✅ | ⬜ |
+| 1 | RETRY | Ungültige Antwort → Fehler anzeigen, erneut fragen | ✅ | ✅ |
+| 2 | HINT | Hinweistexte (Systemstring/Kartenstring) für die nächste Auswahl | ✅ | ✅ |
+| 5 | WIN | Duellende | ✅ | ✅ |
 | 30 | CONFIRM_DECKTOP | Deckoberseite zeigen | ✅ | ⬜ |
 | 31 | CONFIRM_CARDS | Karten zeigen (z. B. gesuchte Karte) | ✅ | ⬜ |
 | 32–39 | SHUFFLE_DECK/HAND/EXTRA/SET_CARD, REFRESH_DECK, SWAP_GRAVE_DECK, REVERSE_DECK, DECK_TOP | Feldmodell | ✅ | ⬜ |
-| 40 | NEW_TURN | Zug-Anzeige, Protokoll | ✅ | ⬜ |
-| 41 | NEW_PHASE | Phasen-Anzeige | ✅ | ⬜ |
+| 40 | NEW_TURN | Zug-Anzeige, Protokoll | ✅ | ✅ |
+| 41 | NEW_PHASE | Phasen-Anzeige | ✅ | ✅ |
 | 42 | CONFIRM_EXTRATOP | Extra-Deck-Oberseite zeigen | ✅ | ⬜ |
-| 50 | MOVE | Kartenbewegung (Kern des Feldmodells + Protokoll) | ✅ | ⬜ |
+| 50 | MOVE | Verlauf (Feld selbst kommt per Abfrage nach jeder Entscheidung) | ✅ | ✅ |
 | 53–56 | POS_CHANGE, SET, SWAP, FIELD_DISABLED | Feldmodell | ✅ | ⬜ |
 | 60–65 | SUMMONING/SUMMONED, SPSUMMONING/SPSUMMONED, FLIPSUMMONING/FLIPSUMMONED | Protokoll | ✅ | ⬜ |
-| 70–76 | CHAINING, CHAINED, CHAIN_SOLVING, CHAIN_SOLVED, CHAIN_END, CHAIN_NEGATED, CHAIN_DISABLED | Kettenanzeige | ✅ | ⬜ |
+| 70–76 | CHAINING, CHAINED, CHAIN_SOLVING, CHAIN_SOLVED, CHAIN_END, CHAIN_NEGATED, CHAIN_DISABLED | Kettenanzeige (aktuelle Kette per duelQueryField), Verlauf | ✅ | ✅ |
 | 80/81 | CARD_SELECTED, RANDOM_SELECTED | Hervorhebung | ✅ | ⬜ |
 | 83 | BECOME_TARGET | Ziel-Markierung | ✅ | ⬜ |
 | 90 | DRAW | Feldmodell, Protokoll | ✅ | ⬜ |
-| 91/92/94/100 | DAMAGE, RECOVER, LPUPDATE, PAY_LPCOST | LP-Anzeige | ✅ | ⬜ |
+| 91/92/94/100 | DAMAGE, RECOVER, LPUPDATE, PAY_LPCOST | LP-Anzeige | ✅ | ✅ |
 | 93 | EQUIP | Ausrüstungsbeziehung | ✅ | ⬜ |
 | 96/97 | CARD_TARGET, CANCEL_TARGET | Dauerhafte Zielbeziehung | ✅ | ⬜ |
-| 101/102 | ADD_COUNTER, REMOVE_COUNTER | Zählmarken | ✅ | ⬜ |
+| 101/102 | ADD_COUNTER, REMOVE_COUNTER | Zählmarken (per Abfrage) | ✅ | ⬜ Anzeige folgt |
 | 110–114 | ATTACK, BATTLE, ATTACK_DISABLED, DAMAGE_STEP_START/END | Kampfanzeige | ✅ | ⬜ |
 | 120 | MISSED_EFFECT | „Timing verpasst“-Hinweis | ✅ | ⬜ |
 | 121–123 | BE_CHAIN_TARGET, CREATE_RELATION, RELEASE_RELATION | intern/Anzeige | ✅ | ⬜ |

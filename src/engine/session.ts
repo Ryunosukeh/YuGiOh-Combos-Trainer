@@ -1,7 +1,7 @@
 // Eine Duell-Sitzung: Kern + Konfiguration + Protokoll der Nutzerantworten.
 // Rückgängig = neue Sitzung mit gleichem Seed und allen Antworten bis auf die letzten n.
 import {
-  OcgDuelMode, OcgLocation, type OcgLocation as OcgLocationT, type OcgQueryFlags as OcgQueryFlagsT, OcgMessageType, OcgPosition, OcgProcessResult, OcgQueryFlags,
+  OcgDuelMode, OcgLocation, OcgResponseType, type OcgLocation as OcgLocationT, type OcgQueryFlags as OcgQueryFlagsT, OcgMessageType, OcgPosition, OcgProcessResult, OcgQueryFlags,
   type OcgCardData, type OcgCoreSync, type OcgDuelHandle, type OcgMessage, type OcgResponse,
 } from "ocgcore-wasm";
 import { toOcgCardData } from "../data/types";
@@ -33,6 +33,11 @@ export interface DuelConfig {
   };
   /** Leere Antwortfenster automatisch passen (Standard: ja). */
   autoPassEmpty?: boolean;
+  /**
+   * Antwortfenster mit Optionen: "auto" (Standard, wie EDOPro) fragt nur, wenn der Kern passende Auslöser bzw.
+   * Schnelleffekte meldet (spe_count > 0); "all" fragt bei jeder Möglichkeit.
+   */
+  chainPrompts?: "auto" | "all";
   startingLP?: number;
 }
 
@@ -60,6 +65,10 @@ export class DuelSession {
   result: { winner: number; reason: number } | null = null;
   /** Lebenspunkte beider Spieler (absoluter Index), aus den Nachrichten mitgeführt. */
   readonly lp: [number, number];
+  /** Zugnummer (1 = erster Zug), Spieler am Zug, aktuelle Phase (OcgPhase). */
+  turn = 0;
+  turnPlayer: 0 | 1 = 0;
+  phase = 0;
   /** Skripte, die der Kern angefragt hat, die es aber nicht gibt (Diagnose). */
   readonly missingScripts = new Set<string>();
 
@@ -194,6 +203,8 @@ export class DuelSession {
         else if (m.type === OcgMessageType.LPUPDATE) this.lp[m.player] = m.lp;
         else if (m.type === OcgMessageType.DAMAGE || m.type === OcgMessageType.PAY_LPCOST) this.lp[m.player] = Math.max(0, this.lp[m.player] - m.amount);
         else if (m.type === OcgMessageType.RECOVER) this.lp[m.player] += m.amount;
+        else if (m.type === OcgMessageType.NEW_TURN) { this.turn++; this.turnPlayer = m.player as 0 | 1; }
+        else if (m.type === OcgMessageType.NEW_PHASE) this.phase = m.phase;
       }
       if (status === OcgProcessResult.END || this.result) return;
       if (status === OcgProcessResult.CONTINUE) continue;
@@ -226,6 +237,8 @@ export class DuelSession {
 
   private autoResponse(d: Decision): OcgResponse | null {
     if (isEmptyChainWindow(d.msg) && this.config.autoPassEmpty !== false) return dummyResponse(d.msg, this.data);
+    if (d.msg.type === OcgMessageType.SELECT_CHAIN && !d.msg.forced && d.msg.spe_count === 0 && this.config.chainPrompts !== "all")
+      return { type: OcgResponseType.SELECT_CHAIN, index: null };
     if (!d.forOpponent) return null;
     if (this.config.opponent?.mode === "ask") {
       // Zugsteuerung bleibt beim Dummy; alle echten Entscheidungen (Handtraps, Ziele …) trifft der Nutzer.
@@ -243,6 +256,11 @@ export class DuelSession {
 
   cards(player: 0 | 1, location: OcgLocationT) {
     const flags = (OcgQueryFlags.CODE | OcgQueryFlags.POSITION | OcgQueryFlags.ATTACK | OcgQueryFlags.DEFENSE | OcgQueryFlags.LEVEL | OcgQueryFlags.RANK | OcgQueryFlags.LINK) as OcgQueryFlagsT;
+    return this.core.duelQueryLocation(this.handle, { controller: player, location, flags });
+  }
+
+  /** Alle Karten eines Ortes mit frei wählbaren Abfrage-Flags (leere Zonen = null). */
+  queryLocation(player: 0 | 1, location: OcgLocationT, flags: OcgQueryFlagsT) {
     return this.core.duelQueryLocation(this.handle, { controller: player, location, flags });
   }
 

@@ -1,5 +1,6 @@
 // Spielt Aktionen über das Prompt-Modell, so wie ein Nutzer in der UI tippen würde (Tests, Systemcheck).
 import { OcgMessageType } from "ocgcore-wasm";
+import { splitDescription } from "./data";
 import { buildPrompt, type MenuOption, type Prompt } from "./prompts";
 import type { DuelSession } from "./session";
 
@@ -56,7 +57,7 @@ export class Driver {
       if (o.tag !== tag || o.card?.code !== code) return false;
       if (effect === undefined || !list) return true;
       const i = (o.response as { index: number }).index;
-      return Number(list[i].description & 0xfn) === effect;
+      return splitDescription(list[i].description).index === effect;
     }, `${tag} ${code}`);
   }
 

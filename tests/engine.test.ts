@@ -128,4 +128,25 @@ describe.skipIf(!hasData)("Engine", () => {
     expect(top).toEqual([...before].reverse());
     s.destroy();
   });
+
+  it("Antwortfenster: Standard fragt nur bei passenden Effekten, „all“ bei jeder Möglichkeit", () => {
+    /** Nächste Entscheidung nach „NS Enghexe → Suche“ (Schritt 1 der Combo). */
+    const after = (chainPrompts: "auto" | "all", hand: number[], search: boolean) => {
+      const s = DuelSession.start(core, data, { ...testhand, hand, chainPrompts });
+      const d = new Driver(s);
+      d.idle("summon", C.Angwitch);
+      d.skipPlacement();
+      d.activate(C.Angwitch);
+      if (search) d.pick(C.Tatsunootoshigo);
+      const t = s.decision!.msg.type;
+      s.destroy();
+      return t;
+    };
+    // Schnellzauber ohne Bezug: Standard überspringt das Fenster nach der Auflösung, „all“ fragt.
+    expect(after("auto", [C.Angwitch, C.MementoFusion], true)).toBe(OcgMessageType.SELECT_IDLECMD);
+    expect(after("all", [C.Angwitch, C.MementoFusion], true)).toBe(OcgMessageType.SELECT_CHAIN);
+    // Verbotener Kelch kann den Effekt der Enghexe sinnvoll beantworten → wird auch im Standard angeboten.
+    expect(after("auto", [C.Angwitch, C.ForbiddenChalice], false)).toBe(OcgMessageType.SELECT_CHAIN);
+  });
+
 });

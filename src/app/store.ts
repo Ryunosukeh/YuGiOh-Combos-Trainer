@@ -8,7 +8,7 @@ import type { Deck, Section } from "../deck/types";
 import type { GameData, Lang } from "../engine/data";
 import { db, newId } from "./db";
 
-export type Route = { screen: "decks" } | { screen: "deck"; id: string } | { screen: "system" };
+export type Route = { screen: "decks" } | { screen: "deck"; id: string } | { screen: "system" } | { screen: "duel" };
 
 export interface ImportState {
   /** Ziel: neues Deck oder ein bestehendes (ersetzen/ergänzen). */
@@ -29,6 +29,10 @@ interface UiState {
   import: ImportState | null;
   /** Scrollpositionen je Bereich, damit Drehen/Reiterwechsel sie nicht verliert. */
   scroll: Record<string, number>;
+  /** Duell im Querformat: Seitenleiste rechts (Rechtshänder) oder links. */
+  sidebar: "right" | "left";
+  /** Offener Dialog „Duell starten“ für dieses Deck. */
+  duelSetup: string | null;
 }
 
 interface AppState extends UiState {
@@ -56,6 +60,8 @@ export const useApp = create<AppState>()(
       lang: "de",
       import: null,
       scroll: {},
+      sidebar: "right",
+      duelSetup: null,
       data: null,
       search: null,
       decks: [],
@@ -100,7 +106,7 @@ export const useApp = create<AppState>()(
       name: "ui-state",
       // Nur Bedienzustand sichern; Decks liegen in IndexedDB, Kartendaten werden neu geladen.
       storage: createJSONStorage(() => sessionStorage),
-      partialize: (s): UiState => ({ route: s.route, tab: s.tab, query: s.query, detail: s.detail, lang: s.lang, import: s.import, scroll: s.scroll }),
+      partialize: (s): UiState => ({ route: s.route, tab: s.tab, query: s.query, detail: s.detail, lang: s.lang, import: s.import, scroll: s.scroll, sidebar: s.sidebar, duelSetup: s.duelSetup }),
     },
   ),
 );

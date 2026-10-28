@@ -2,6 +2,8 @@
 import { useEffect, useState } from "react";
 import { useApp } from "./app/store";
 import { CardSearch } from "./cards/search";
+import { DuelScreen } from "./duel/DuelScreen";
+import { DuelSetup } from "./duel/DuelSetup";
 import { DeckEditor } from "./screens/DeckEditor";
 import { DeckList } from "./screens/DeckList";
 import { SystemCheck } from "./screens/SystemCheck";
@@ -35,9 +37,10 @@ export function App() {
   if (error) return <div className="page"><h1>Fehler beim Laden</h1><p className="error" role="alert">{error}</p><button className="btn" onClick={() => location.reload()}>Erneut versuchen</button></div>;
   if (!data) return <div className="page loading"><h1>Yu-Gi-Oh! Combo-Trainer</h1><p>{progress}</p></div>;
 
-  switch (route.screen) {
-    case "deck": return <DeckEditor id={route.id} />;
-    case "system": return <SystemCheck />;
-    default: return <DeckList />;
-  }
+  return (
+    <>
+      {route.screen === "deck" ? <DeckEditor id={route.id} /> : route.screen === "system" ? <SystemCheck /> : route.screen === "duel" ? <DuelScreen /> : <DeckList />}
+      <DuelSetup />
+    </>
+  );
 }
