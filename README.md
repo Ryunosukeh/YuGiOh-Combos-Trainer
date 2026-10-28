@@ -5,8 +5,8 @@ EDOPro-Regelkern [ygopro-core](https://github.com/edo9300/ygopro-core) (als WebA
 von [Project Ignis](https://github.com/ProjectIgnis/CardScripts). Kein KI-Gegner: Der Gegner ist ein passiver Dummy,
 dem man optional Handtraps geben kann.
 
-**Stand:** Schritt 2 von 7 – Regelkern, Datenpaket und Konsolen-Steuerung laufen. Deckbuilder und
-Duell-Oberfläche folgen. Details: [`CLAUDE.md`](CLAUDE.md), [`docs/ARCHITEKTUR.md`](docs/ARCHITEKTUR.md).
+**Stand:** Schritt 3 von 7 – Regelkern, Datenpaket, Kartensuche, Deckbuilder und Massen-Import laufen.
+Die Duell-Oberfläche (Spielfeld) folgt in Schritt 4. Web-App: https://ryunosukeh.github.io/YuGiOh-Combos-Trainer/ Details: [`CLAUDE.md`](CLAUDE.md), [`docs/ARCHITEKTUR.md`](docs/ARCHITEKTUR.md).
 
 ## Loslegen
 
@@ -15,7 +15,8 @@ npm install
 npm run update-data     # Datenpaket bauen (Project Ignis + deutsche Texte von YGOPRODeck) → data/bundle/
 npm test                # Engine-Tests inkl. Abnahme-Combo
 npm run duel -- --hand 54550967 --seed 1234   # Duell in der Konsole (Testdeck: decks/memento-test.ydk)
-npm run dev             # Web-App (Systemcheck) unter http://localhost:5173
+npm run dev             # Web-App unter http://localhost:5173
+npm run test:e2e        # Oberflächentests in 360×800 und 800×360 (Screenshots in test-results/screens/)
 ```
 
 Benötigt Node.js ≥ 22.21.

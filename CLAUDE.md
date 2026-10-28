@@ -15,7 +15,8 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
       Spike `research/combo-spike.mjs` spielt die Abnahme-Combo headless komplett durch.
 - [x] Schritt 2: Headless-Duell – Datenpaket (`npm run update-data`), GitHub Action → Pages, Engine
       (`src/engine/`), Konsole (`npm run duel`), Browser-Systemcheck, 7 Tests inkl. Abnahme-Combo.
-- [ ] Schritt 3: Kartendaten + Deckbuilder + Massen-Import
+- [x] Schritt 3: Kartensuche (DE/EN, unscharf), Kartenansicht, Deckbuilder (Main/Extra/Side, TCG-Banliste),
+      Massen-Import mit Vorschau, .ydk/ydke, Deckverwaltung (IndexedDB), Hoch-/Querformat. 30 Vitest + 10 Playwright.
 - [ ] Schritt 4: Duell-UI mobil (Hoch + Quer)
 - [ ] Schritt 5: Rückgängig + Combo-Protokoll
 - [ ] Schritt 6: PWA + Android-APK
@@ -30,17 +31,34 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - ocgcore-wasm 0.1.6 hat einen SORT_CARD-Fehler → `patches/ocgcore-wasm+0.1.6.patch` (postinstall). Bei
   Versionswechsel prüfen, ob der Patch noch nötig ist (Test „Karten sortieren“).
 - Antwortprotokoll enthält nur Nutzerentscheidungen; Auto-Antworten (leere Fenster, Dummy) sind deterministisch.
+- UI-Regel: Komponenten nie je nach Ausrichtung austauschen, nur per CSS-Klasse umgestalten. Dann bleibt beim
+  Drehen alles eingehängt (Eingaben, Scroll, offene Dialoge). Reiter im Hochformat: inaktiver Bereich
+  `visibility: hidden`, nicht `display: none` (sonst geht die Scrollposition verloren).
+- Tippflächen ≥ 44 px – wird in jedem Playwright-Test automatisch geprüft (`checkLayout`), ebenso kein
+  waagerechtes Scrollen.
+- Kartenbilder: `<img>` von images.ygoprodeck.com (kein CORS → kein fetch möglich), Service Worker speichert
+  jedes Bild beim ersten Laden (Cache First, opake Antworten). Tests blockieren YGOPRODeck-Bilder.
+- Import-Status: exakt (normalisierter Name DE/EN) = sicher; sonst unsicher mit vorausgewähltem besten
+  Vorschlag (Ähnlichkeit ≥ 0,45, auch Namensanfang); darunter „nicht gefunden“.
+- Banliste: Plus sperrt nur bei 3 Exemplaren; Verstöße gegen die Liste meldet die Deckprüfung.
 - Prompt-Modell (`prompts.ts`) ist die einzige Stelle, die Kern-Anfragen in Auswahlmöglichkeiten übersetzt –
   Konsole, Tests und spätere UI nutzen es gemeinsam.
 
 ## Aufbau
 - `scripts/update-data.ts` – Datenpaket bauen · `scripts/duel-cli.ts` – Konsole
+- `src/app/` – Zustand (zustand, UI-Zustand in sessionStorage), Dexie-DB · `src/screens/` – Bildschirme
+- `src/ui/` – Sheet (Bottom Sheet hoch / Seitenpanel quer), Hooks (Layout, langes Drücken, Scroll), Kartenbild
+- `src/cards/` – Typzeile DE, Suche (MiniSearch + Levenshtein) · `src/deck/` – Import, Prüfung, .ydk, ydke
+- `tests/e2e/` – Playwright in 360×800 und 800×360, Screenshots nach `test-results/screens/`
 - `src/data/` – Bundle-Format, Node-Lader · `src/web/` – Browser-Lader, Kern im Browser
 - `src/engine/` – Sitzung, Prompts, Autopilot, Texte · `src/deck/` – .ydk
 - `src/fixtures/memento.ts` – Testdeck + Abnahme-Combo (Tests und Systemcheck)
 - `tests/` – Vitest (braucht `data/bundle`, sonst übersprungen)
 
 ## Umgebung (Cloud-Session)
+- Playwright: `@playwright/test` 1.63.0 passt zum vorinstallierten Chromium. Sichtprüfung mit echten Bildern nur
+  mit `proxy: { server: $HTTPS_PROXY, bypass: "localhost" }` und `ignoreHTTPSErrors` (nicht in Tests).
+- Hintergrund-Server (`vite preview`) nach Gebrauch per PID beenden (`ps … | grep '[v]ite preview'`).
 - Node-`fetch` braucht hier den Proxy: `NODE_USE_ENV_PROXY=1 npm run update-data`.
 - `pkill -f <muster>` nicht verwenden, wenn das Muster in der eigenen Befehlszeile steht.
 

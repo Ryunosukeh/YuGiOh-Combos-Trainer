@@ -302,3 +302,20 @@ Erledigt nach Schritt 2:
   (a) Yugipedia (Semantic-MediaWiki-API, Inhalte CC BY-SA 4.0, hat deutsche TCG-Namen),
   (b) db.ygoresources.com (Daten aus der offiziellen Konami-Datenbank, alle Sprachen, keine Lizenzangabe),
   (c) offizielle Konami-Kartendatenbank (Scraping, langsam, rechtlich am heikelsten).
+
+## 13. Schritt 3 (Kartendaten, Deckbuilder, Massen-Import)
+
+- **Suche:** MiniSearch-Index über deutsche und englische Namen (Präfix + Tippfehler-Toleranz), danach
+  Rangfolge über normalisierte Schlüssel (klein, ä→ae, ohne Satzzeichen): exakt > Anfang > enthält > ähnlich.
+  Ähnlichkeit berücksichtigt auch den Namensanfang („Ash Blosom“ → „Ash Blossom & Joyous Spring“).
+- **Massen-Import:** „3x Name“, „3 Name“, „Name x3“, „Name 3x“, Aufzählungszeichen, Überschriften
+  (Main/Extra/Side, deutsch und englisch), Kategorie-Zeilen („Monster (20)“) werden übersprungen,
+  Extra-Deck-Monster automatisch zugeordnet, .ydk-Text und ydke://-Links erkannt. Namen, die selbst mit
+  einer Zahl beginnen, werden zuerst als ganze Zeile geprüft. Die Abnahme-Liste wird zu 37/37 sicher erkannt.
+- **Deckprüfung:** 40–60 / 0–15 / 0–15, max. 3 Exemplare (Alt-Arts zählen als Original), aktuelle
+  TCG-Banliste aus LFLists, Extra-Deck-Karten nur im Extra Deck.
+- **Speicherung:** Decks in IndexedDB (Dexie). Datenpaket versioniert in Cache Storage → zweiter Start
+  ohne Download, offline nutzbar. Bedienzustand (Route, Reiter, Suche, offener Import) in sessionStorage.
+- **Bilder:** siehe CLAUDE.md. Bewusster Kompromiss im Browser: Service Worker speichert opake Antworten;
+  Chrome rechnet diese mit Polsterung auf das Speicherkontingent an. Bei ~100 Karten pro Deck unkritisch.
+  Die Android-App lädt Bilder in Schritt 6 nativ herunter.

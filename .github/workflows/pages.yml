@@ -50,7 +50,7 @@ jobs:
         if: failure()
         shell: bash
         run: |
-          for f in update-data.log test.log; do
+          for f in update-data.log test.log e2e.log; do
             [ -f "$f" ] && echo "::error title=$f::$(tail -c 3000 "$f" | sed -e ':a' -e 'N' -e '$!ba' -e 's/%/%25/g; s/\r//g; s/\n/%0A/g')"
           done
           true
@@ -66,6 +66,21 @@ jobs:
 
       - name: Web-App bauen
         run: npm run build:site
+
+      - name: Oberflächentests (Hoch- und Querformat)
+        shell: bash
+        run: |
+          npx playwright install --with-deps chromium
+          set -o pipefail
+          npm run test:e2e 2>&1 | tee e2e.log
+
+      - name: Screenshots aufheben
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: test-results/
+          if-no-files-found: ignore
 
       - uses: actions/upload-pages-artifact@v4
         with:

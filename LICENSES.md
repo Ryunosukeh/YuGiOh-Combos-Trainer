@@ -29,3 +29,9 @@ auf dem eigenen Gerät gespeichert und nicht mit der App verteilt.
 | tsx | MIT | TypeScript-Skripte in Node |
 | patch-package | MIT | Patch für ocgcore-wasm (SORT_CARD) |
 | @types/* | MIT | Typdefinitionen |
+| dexie | Apache-2.0 | IndexedDB (Decks) |
+| minisearch | MIT | Suchindex |
+| fastest-levenshtein | MIT | Tippfehler-Abgleich |
+| zustand | MIT | App-Zustand |
+| vite-plugin-pwa (Workbox) | MIT | Service Worker (Bild-Cache) |
+| @playwright/test | Apache-2.0 | Oberflächentests |
