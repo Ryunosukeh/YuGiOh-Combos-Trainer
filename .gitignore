@@ -1,0 +1,6 @@
+node_modules/
+dist/
+# Lizenzfreie bzw. Konami-Daten nie committen
+data/
+*.cdb
+*.lflist.conf
