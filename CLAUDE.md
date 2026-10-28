@@ -52,6 +52,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Kettenfenster: Standard „auto“ wie EDOPro (nur fragen, wenn `spe_count > 0`), wählbar „all“. Teil der
   Duell-Konfiguration, damit Neuabspielen deterministisch bleibt.
 - Zonenwahl: Auswahlfenster startet eingeklappt, leuchtende Zone auf dem Feld antippen.
+- Tippen immer über `click` auslösen, nie über `pointerup` (`usePress`): Sonst trifft der nachfolgende
+  Touch-Klick einen Knopf im gerade geöffneten Menü („Geisterklick“ → ungewolltes „Setzen“). Duell-Tests
+  tippen deshalb mit `.tap()` statt `.click()`.
 - Vorschaubilder in Knöpfen `aria-hidden`, sonst landet der Alt-Text im Knopfnamen.
 - Prompt-Modell (`prompts.ts`) ist die einzige Stelle, die Kern-Anfragen in Auswahlmöglichkeiten übersetzt –
   Konsole, Tests und spätere UI nutzen es gemeinsam.

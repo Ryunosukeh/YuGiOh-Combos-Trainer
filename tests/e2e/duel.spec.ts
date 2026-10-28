@@ -19,7 +19,7 @@ async function place(page: Page) {
   for (let i = 0; i < 4; i++) {
     await settle(page);
     const zone = page.locator(".cell.can-place").first();
-    if (await zone.count()) { await zone.click(); continue; }
+    if (await zone.count()) { await zone.tap(); continue; }
     const pos = prompt(page).getByRole("button", { name: "offener Angriff" });
     if (await pos.count()) { await pos.click(); continue; }
     return;
@@ -40,8 +40,9 @@ async function passChains(page: Page) {
 async function act(page: Page, card: string, action: RegExp) {
   await place(page);
   await passChains(page);
-  await page.getByRole("button", { name: new RegExp(`${esc(card)}( \\(|).*– Aktionen$`) }).first().click();
-  await page.getByRole("dialog").getByRole("button", { name: action }).click();
+  // Echtes Tippen (Touch), nicht Mausklick: deckt den „Geisterklick“ ins frisch geöffnete Menü ab.
+  await page.getByRole("button", { name: new RegExp(`${esc(card)}( \\(|).*– Aktionen$`) }).first().tap();
+  await page.getByRole("dialog").getByRole("button", { name: action }).tap();
   await settle(page);
 }
 
@@ -204,4 +205,14 @@ test("Rückgängig, Feld ansehen und Drehen während einer Auswahl", async ({ pa
   await settle(page);
   await expect(prompt(page)).toContainText("Mementotlanischer Tatsunootoshigo");
   await expect(page.getByRole("button", { name: /Mementotlanischer Tatsunootoshigo – Aktionen/ })).toHaveCount(0);
+});
+
+test("Touch: Normalbeschwörung offen in Angriff, Feldzauber offen aktiviert (kein Geisterklick)", async ({ page }) => {
+  await page.getByRole("button", { name: /Mementotlanische Enghexe – Aktionen/ }).tap();
+  await expect(page.getByRole("dialog").getByRole("button", { name: "Normalbeschwörung" })).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Normalbeschwörung" }).tap();
+  await place(page);
+  const card = page.getByRole("button", { name: /^Monsterzone \d: Mementotlanische Enghexe/ }).locator(".duel-card");
+  await expect(card).not.toHaveClass(/facedown/);
+  await expect(card).not.toHaveClass(/\bdef\b/);
 });

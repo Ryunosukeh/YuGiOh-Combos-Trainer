@@ -19,7 +19,12 @@ export function useLayout(): Layout {
   return layout;
 }
 
-/** Tippen und langes Drücken (450 ms) unterscheiden; Bewegung > 10 px bricht ab (Scrollen). */
+/**
+ * Tippen und langes Drücken (450 ms) unterscheiden; Bewegung > 10 px bricht ab (Scrollen).
+ * Tippen reagiert auf `click`, nicht auf `pointerup`: Auf Touchscreens folgt dem Loslassen noch ein Klick an
+ * derselben Stelle. Öffnete sich schon beim Loslassen ein Menü, träfe dieser Klick dessen Knopf
+ * (z. B. „Setzen“). Nach langem Drücken wird der folgende Klick verschluckt.
+ */
 export function usePress(onTap: () => void, onLong: () => void) {
   const timer = useRef<number | undefined>(undefined);
   const start = useRef<{ x: number; y: number } | null>(null);
@@ -35,13 +40,12 @@ export function usePress(onTap: () => void, onLong: () => void) {
     onPointerMove(e: RPointerEvent) {
       if (start.current && Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 10) { clear(); start.current = null; }
     },
-    onPointerUp() {
-      const wasPress = start.current && !longFired.current && timer.current !== undefined;
-      clear();
-      start.current = null;
-      if (wasPress) onTap();
-    },
+    onPointerUp() { clear(); },
     onPointerCancel() { clear(); start.current = null; },
+    onClick(e: { preventDefault(): void }) {
+      if (longFired.current) { longFired.current = false; e.preventDefault(); return; }
+      onTap();
+    },
     onContextMenu(e: Event | { preventDefault(): void }) { e.preventDefault(); },
   };
 }
