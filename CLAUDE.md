@@ -41,7 +41,7 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - `tests/` – Vitest (braucht `data/bundle`, sonst übersprungen)
 
 ## Umgebung (Cloud-Session)
-- Node-`fetch` braucht hier den Proxy: `--use-env-proxy` steht deshalb im npm-Skript `update-data`.
+- Node-`fetch` braucht hier den Proxy: `NODE_USE_ENV_PROXY=1 npm run update-data`.
 - `pkill -f <muster>` nicht verwenden, wenn das Muster in der eigenen Befehlszeile steht.
 
 ## Offene Punkte

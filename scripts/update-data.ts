@@ -3,6 +3,8 @@
 //   npm run update-data                  # alles aktualisieren
 //   npm run update-data -- --no-fetch    # nur aus .cache/ neu bauen (offline)
 //   npm run update-data -- --out <dir>   # anderes Zielverzeichnis
+//
+// Hinter einem HTTP-Proxy (z. B. Cloud-Sessions) mit NODE_USE_ENV_PROXY=1 starten, sonst ignoriert fetch den Proxy.
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -224,4 +226,9 @@ async function main() {
   for (const [n, f] of Object.entries(files)) console.log(`  ${n.padEnd(18)} ${mb(f.bytes)}`);
 }
 
-main().catch((e) => { console.error(e); process.exit(1); });
+main().catch((e) => {
+  console.error(e);
+  // In GitHub Actions als Annotation sichtbar machen.
+  if (process.env.GITHUB_ACTIONS) console.log(`::error title=update-data::${String(e instanceof Error ? e.stack ?? e.message : e).replace(/\r?\n/g, "%0A")}`);
+  process.exit(1);
+});

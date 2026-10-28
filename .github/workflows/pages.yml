@@ -27,6 +27,7 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          check-latest: true
           cache: npm
 
       - run: npm ci
@@ -39,7 +40,7 @@ jobs:
           restore-keys: data-sources-
 
       - name: Datenpaket bauen
-        run: npm run update-data
+        run: node --version && npm run update-data
 
       - name: Typprüfung
         run: npm run typecheck

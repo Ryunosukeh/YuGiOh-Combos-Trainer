@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "update-data": "node --use-env-proxy --disable-warning=ExperimentalWarning --import tsx scripts/update-data.ts",
+    "update-data": "node --disable-warning=ExperimentalWarning --import tsx scripts/update-data.ts",
     "duel": "node --disable-warning=ExperimentalWarning --import tsx scripts/duel-cli.ts",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
