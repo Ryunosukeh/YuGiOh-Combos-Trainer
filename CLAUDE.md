@@ -13,7 +13,7 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 ## Stand
 - [x] Schritt 1: Recherche → `docs/ARCHITEKTUR.md`, `docs/NACHRICHTEN.md`, `LICENSES.md`.
       Spike `research/combo-spike.mjs` spielt die Abnahme-Combo headless komplett durch.
-- [ ] Schritt 2: Headless-Duell (wartet auf OK zu Schritt 1)
+- [ ] Schritt 2: Headless-Duell
 - [ ] Schritt 3: Kartendaten + Deckbuilder + Massen-Import
 - [ ] Schritt 4: Duell-UI mobil (Hoch + Quer)
 - [ ] Schritt 5: Rückgängig + Combo-Protokoll
@@ -26,10 +26,10 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Optionale Einzel-Auslöser kommen als `SELECT_EFFECTYN`; leere `SELECT_CHAIN` werden auto-gepasst.
 - `setcode` aus cards.cdb als BigInt lesen (64 Bit).
 
-## Offene Punkte (siehe ARCHITEKTUR.md §9)
-- E1 Daten-Bundle: wird per GitHub Action gebaut und mit der Web-App auf GitHub Pages ausgeliefert (nicht in die Git-Historie committet). Sichtbarkeit des Repos offen.
+## Entscheidungen aus ARCHITEKTUR.md §9
+- E1 Daten-Bundle: wird per GitHub Action gebaut und mit der Web-App auf GitHub Pages ausgeliefert (nicht in die Git-Historie committet). Repo ist öffentlich → Pages kostenlos.
 - E2 erledigt: YGOPRODeck freigegeben (API mit CORS `*`; Bilder-Host ohne CORS-Header → im Browser per <img>/Service Worker, in der App per nativem HTTP).
-- E3 Repo `YuGiOh-Combos-Trainer` muss der Nutzer anlegen (Session darf keine Repos erstellen).
+- E3 erledigt: https://github.com/Ryunosukeh/YuGiOh-Combos-Trainer (öffentlich, Branch `main`).
 - E4 entschieden: React.
 
 ## Spike ausführen
