@@ -224,6 +224,8 @@ async function main() {
   console.log(`Fertig: ${OUT}`);
   console.log(`  ${cardList.length} Karten (${cardsDe} mit deutschem Text), ${Object.keys(index).length} Skripte, ${lflists.length} Banlisten`);
   for (const [n, f] of Object.entries(files)) console.log(`  ${n.padEnd(18)} ${mb(f.bytes)}`);
+  if (process.env.GITHUB_ACTIONS)
+    console.log(`::notice title=Datenpaket ${manifest.version}::${cardList.length} Karten, davon ${cardsDe} mit deutschem Text (YGOPRODeck ${german.dbVersion}), ${Object.keys(index).length} Skripte`);
 }
 
 main().catch((e) => {
