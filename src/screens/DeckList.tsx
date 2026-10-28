@@ -5,8 +5,9 @@ import { defaultLfList, validateDeck } from "../deck/validate";
 import type { Deck } from "../deck/types";
 import { ConfirmDialog, InputDialog, Sheet } from "../ui/Sheet";
 import { ImportDialog } from "./ImportDialog";
+import { SettingsFields } from "../ui/SettingsFields";
 
-type Dialog = { kind: "new" } | { kind: "rename" | "menu" | "delete"; deck: Deck } | null;
+type Dialog = { kind: "new" | "settings" } | { kind: "rename" | "menu" | "delete"; deck: Deck } | null;
 
 export function DeckList() {
   const { decks, set, createDeck, updateDeck, copyDeck, deleteDeck, data } = useApp();
@@ -42,6 +43,7 @@ export function DeckList() {
         </ul>
       )}
       <footer className="page-foot">
+        <button className="link" onClick={() => setDialog({ kind: "settings" })}>Einstellungen</button>
         <button className="link" onClick={() => set({ route: { screen: "system" } })}>Systemcheck</button>
         {data && <span className="muted small">Daten {data.manifest.version}</span>}
         <span className="muted small">Kartentexte: YGOPRODeck, Yugipedia (CC BY-SA 4.0) · Regeln: Project Ignis</span>
@@ -59,6 +61,11 @@ export function DeckList() {
       {dialog?.kind === "delete" && (
         <ConfirmDialog title="Deck löschen?" text={`„${dialog.deck.name}“ wird endgültig gelöscht.`} confirm="Löschen" danger onClose={() => setDialog(null)}
           onConfirm={() => deleteDeck(dialog.deck.id)} />
+      )}
+      {dialog?.kind === "settings" && (
+        <Sheet title="Einstellungen" onClose={() => setDialog(null)}>
+          <div className="stack"><SettingsFields /></div>
+        </Sheet>
       )}
       {dialog?.kind === "menu" && (
         <Sheet title={dialog.deck.name} onClose={() => setDialog(null)}>

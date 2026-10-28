@@ -6,6 +6,7 @@ import type { DuelConfig } from "../engine/session";
 import type { DuelView } from "../engine/view";
 import type { FromWorker, ToWorker } from "../worker/protocol";
 import { stepsToUndoAction } from "../engine/undo";
+import { dataBaseUrl } from "../platform";
 
 const SAVE_KEY = "duel-save";
 // JSON kennt kein BigInt (kommt in Antworten wie ANNOUNCE_RACE vor).
@@ -79,7 +80,7 @@ export const useDuel = create<DuelState>()((set, get) => {
         break;
     }
   }
-  const base = () => new URL("data/", document.baseURI).toString();
+  const base = () => dataBaseUrl();
 
   return {
     status: "idle", error: null, view: null, log: [], config: null, busy: false, rejected: false, lastMs: 0, responses: [],

@@ -30,7 +30,7 @@ export function Field({ view, actions }: { view: DuelView; actions: FieldActions
     P[opp].mzone[oppSeq] ? zone(opp, M, oppSeq, P[opp].mzone[oppSeq], "Extra Monster Zone (Gegner)") : zone(me, M, mySeq, P[me].mzone[mySeq], "Extra Monster Zone");
 
   return (
-    <div className="field" ref={ref} aria-label="Spielfeld">
+    <div className="board" ref={ref} aria-label="Spielfeld">
       <div className="field-grid">
         {/* Gegner hinten: Deck, Z/F 5..1, Extra */}
         <Pile player={opp} location={OcgLocation.DECK} label="Deck (Gegner)" count={P[opp].deckCount} />

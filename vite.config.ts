@@ -30,9 +30,27 @@ export default defineConfig({
     serveBundle(),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: "auto",
-      // Web-App-Manifest (Installation, Icons) folgt in Schritt 6.
-      manifest: false,
+      // Registrierung selbst in main.tsx – nur im Browser, nicht in der Android-App (dort liefert die APK alles).
+      injectRegister: null,
+      includeAssets: ["icon.svg", "apple-touch-icon.png"],
+      manifest: {
+        name: "Yu-Gi-Oh! Combo-Trainer",
+        short_name: "Combo-Trainer",
+        description: "Combos üben gegen einen passiven Gegner – Regeln von EDOPro (ygopro-core).",
+        lang: "de",
+        start_url: "./",
+        scope: "./",
+        display: "standalone",
+        // Ausrichtung stellt die App selbst ein (Einstellungen), nicht das Manifest.
+        orientation: "any",
+        background_color: "#1d1240",
+        theme_color: "#6b3fd4",
+        icons: [
+          { src: "icon-192.png", sizes: "192x192", type: "image/png" },
+          { src: "icon-512.png", sizes: "512x512", type: "image/png" },
+          { src: "icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
+        ],
+      },
       workbox: {
         globPatterns: ["**/*.{js,css,html,wasm}"],
         // ocgcore-wasm 0.1.6: diese beiden Module enthalten nur das eingebettete WASM (je ~1,3 MB) und werden

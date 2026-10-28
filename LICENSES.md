@@ -34,4 +34,5 @@ auf dem eigenen Gerät gespeichert und nicht mit der App verteilt.
 | fastest-levenshtein | MIT | Tippfehler-Abgleich |
 | zustand | MIT | App-Zustand |
 | vite-plugin-pwa (Workbox) | MIT | Service Worker (Bild-Cache) |
-| @playwright/test | Apache-2.0 | Oberflächentests |
+| @playwright/test | Apache-2.0 | Oberflächentests, Icons rendern |
+| @capacitor/core, /android, /cli, /app, /screen-orientation | MIT | Android-App |

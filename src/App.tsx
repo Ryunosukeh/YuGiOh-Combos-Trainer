@@ -8,11 +8,21 @@ import { DeckEditor } from "./screens/DeckEditor";
 import { DeckList } from "./screens/DeckList";
 import { SystemCheck } from "./screens/SystemCheck";
 import { loadBundleFromUrl } from "./web/bundle";
+import { dataBaseUrl, installBackButton } from "./platform";
+import { useOrientationLock } from "./app/settings";
 
 export function App() {
   const { data, route, setData, loadDecks } = useApp();
   const [progress, setProgress] = useState("Starte …");
   const [error, setError] = useState<string | null>(null);
+  useOrientationLock();
+  useEffect(() => {
+    installBackButton({
+      closeDetail: () => useApp.getState().detail !== null && (useApp.getState().set({ detail: null }), true),
+      inDuel: () => useApp.getState().route.screen === "duel",
+      toStart: () => useApp.getState().route.screen !== "decks" && (useApp.getState().set({ route: { screen: "decks" } }), true),
+    });
+  }, []);
 
   useEffect(() => {
     if (data) return;
@@ -20,7 +30,7 @@ export function App() {
     (async () => {
       try {
         const [bundle] = await Promise.all([
-          loadBundleFromUrl(new URL("data/", document.baseURI).toString(), (s) => !cancelled && setProgress(`Lade ${s} …`)),
+          loadBundleFromUrl(dataBaseUrl(), (s) => !cancelled && setProgress(`Lade ${s} …`)),
           loadDecks(),
         ]);
         if (cancelled) return;

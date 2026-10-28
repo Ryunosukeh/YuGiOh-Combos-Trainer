@@ -4,9 +4,12 @@ import type { Deck } from "../deck/types";
 
 class TrainerDb extends Dexie {
   decks!: Table<Deck, string>;
+  /** Kartenbilder der Android-App (einmal heruntergeladen). Im Browser übernimmt das der Service Worker. */
+  images!: Table<{ url: string; blob: Blob }, string>;
   constructor() {
     super("yugioh-combos-trainer");
     this.version(1).stores({ decks: "id, name, updatedAt" });
+    this.version(2).stores({ decks: "id, name, updatedAt", images: "url" });
   }
 }
 

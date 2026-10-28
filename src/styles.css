@@ -12,10 +12,10 @@
   --bad: #b3261e;
   --tap: 44px;
   --radius: 12px;
-  --safe-t: env(safe-area-inset-top, 0px);
-  --safe-r: env(safe-area-inset-right, 0px);
-  --safe-b: env(safe-area-inset-bottom, 0px);
-  --safe-l: env(safe-area-inset-left, 0px);
+  --safe-t: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --safe-r: var(--safe-area-inset-right, env(safe-area-inset-right, 0px));
+  --safe-b: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --safe-l: var(--safe-area-inset-left, env(safe-area-inset-left, 0px));
   /* Rahmenfarben der Kartentypen (Platzhalter, falls kein Bild) */
   --f-normal: #c9a95c; --f-effect: #c8743c; --f-fusion: #8a5aa8; --f-synchro: #d8d8d8; --f-xyz: #333;
   --f-link: #2f6fb0; --f-ritual: #5a86c5; --f-spell: #1f8f7a; --f-trap: #a8407a; --f-token: #888;
@@ -216,7 +216,7 @@ h3 { font-size: 0.95rem; margin: 16px 0 8px; }
 .duel { --cw: 44px; --ch: calc(var(--cw) * 1.46); height: 100%; display: flex; background: var(--bg); overflow: hidden; }
 .duel-main { flex: 1; min-width: 0; display: flex; flex-direction: column; padding: var(--safe-t) var(--safe-r) 0 var(--safe-l); }
 .duel-side { display: none; }
-.duel.busy .field, .duel.busy .hand { opacity: 0.85; }
+.duel.busy .board, .duel.busy .hand { opacity: 0.85; }
 
 .duel-info { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px 10px; font-size: 0.85rem; background: var(--panel); border-bottom: 1px solid var(--line); }
 .duel-info .lp { font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -227,7 +227,7 @@ h3 { font-size: 0.95rem; margin: 16px 0 8px; }
 .duel-controls .btn { white-space: nowrap; }
 .duel-controls .icon-btn { margin-left: auto; }
 
-.field { flex: 1; min-height: 0; display: grid; place-items: center; padding: 4px; }
+.board { flex: 1; min-height: 0; display: grid; place-items: center; padding: 4px; }
 .field-grid { display: grid; grid-template-columns: repeat(7, var(--cw)); grid-auto-rows: var(--ch); gap: 4px; }
 .cell {
   position: relative; width: var(--cw); height: var(--ch); padding: 0; border-radius: 5px; background: transparent;

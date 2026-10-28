@@ -11,13 +11,14 @@ import { CardDetail } from "../screens/CardDetail";
 import { fieldActions } from "./actions";
 import { Field } from "./Field";
 import { CardMenu, ChainView, HandBar, PileViewer, ProtocolView } from "./Parts";
-import { DUEL_BACKGROUNDS, useSettings } from "../app/settings";
+import { useSettings } from "../app/settings";
+import { SettingsFields } from "../ui/SettingsFields";
 import { PromptPanel } from "./PromptPanel";
 
 export function DuelScreen() {
   const layout = useLayout();
   const { data, set, detail } = useApp();
-  const { sidebar, duelBg, setSettings } = useSettings();
+  const { sidebar, duelBg } = useSettings();
   const duel = useDuel();
   const { view, status, error, busy } = duel;
   const [dialog, setDialog] = useState<"leave" | "menu" | "log" | null>(null);
@@ -31,6 +32,12 @@ export function DuelScreen() {
   // Zonenwahl: Feld freihalten (Fenster eingeklappt), damit die leuchtenden Zonen antippbar sind.
   const zoneCount = actions.zones.size;
   useEffect(() => { if (zoneCount) useDuel.getState().setUi({ minimized: true }); }, [zoneCount, view]);
+  // Android-Zurück-Taste im Duell: erst nachfragen, nicht einfach verlassen.
+  useEffect(() => {
+    const onBack = () => setDialog("leave");
+    window.addEventListener("duel-back", onBack);
+    return () => window.removeEventListener("duel-back", onBack);
+  }, []);
   if (!data) return null;
   if (status === "error") return (
     <div className="page"><h1>Fehler im Duell</h1><p className="error" role="alert">{error}</p>
@@ -97,17 +104,7 @@ export function DuelScreen() {
             <p className="muted small">Seed {duel.config?.seed} · {view.steps} Entscheidungen · letzte Berechnung {duel.lastMs} ms</p>
             <button className="btn" onClick={() => { setDialog(null); duel.restart(); }}>Neu starten (gleicher Seed, gleiche Hand)</button>
             <button className="btn" onClick={() => { setDialog(null); duel.restart(Math.floor(Math.random() * 2 ** 32)); }}>Neu starten (neu mischen)</button>
-            <div className="field">
-              <span>Hintergrund</span>
-              <div className="bg-choices" role="radiogroup" aria-label="Hintergrund">
-                {DUEL_BACKGROUNDS.map((b) => (
-                  <button key={b.id} role="radio" aria-checked={duelBg === b.id} className={`bg-choice ${duelBg === b.id ? "on" : ""}`} data-bg={b.id} onClick={() => setSettings({ duelBg: b.id })}>
-                    <span className="bg-swatch" aria-hidden="true" />{b.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <button className="btn" onClick={() => setSettings({ sidebar: sidebar === "right" ? "left" : "right" })}>Seitenleiste im Querformat: {sidebar === "right" ? "rechts → links" : "links → rechts"}</button>
+            <SettingsFields />
             <button className="btn danger" onClick={() => setDialog("leave")}>Duell beenden</button>
           </div>
         </Sheet>

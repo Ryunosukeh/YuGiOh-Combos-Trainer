@@ -193,7 +193,7 @@ Umsetzung:
 | Fuzzy-Suche | MiniSearch (MIT) für die Live-Suche, `fastest-levenshtein` (MIT) für Import-Abgleich | MiniSearch hat einen Index → schnell auf schwachen Handys bei 2×15k Namen; Fuse.js scannt linear |
 | Listen | `@tanstack/react-virtual` (MIT) | Suchergebnisse/Friedhof virtualisiert |
 | PWA | `vite-plugin-pwa` (Workbox, MIT) | Offline-App-Shell |
-| Android | Capacitor 7 + `@capacitor/screen-orientation` | offizielles Orientation-Plugin |
+| Android | Capacitor 8 + `@capacitor/screen-orientation`, `@capacitor/app` | offizielles Orientation-Plugin, Zurück-Taste |
 | Desktop | Tauri 2 (später) | WebView2 = Chromium, gleicher Codepfad |
 | Tests | Vitest (Logik), Playwright (Screenshots 360×800 + 800×360, Combo-E2E) | |
 | SQLite | nur im Build-Skript (`node:sqlite`/better-sqlite3), **nicht in der App** | spart ~1 MB WASM im Client |
@@ -202,12 +202,14 @@ Umsetzung:
 
 - **Android-App (Capacitor):** Sperre Hoch/Quer/Automatisch zuverlässig über das Plugin.
 - **Browser/PWA:** `screen.orientation.lock()` funktioniert in Chrome Android **nur im Vollbild
-  bzw. als installierte PWA** und in iOS Safari gar nicht. Im Browser zeige ich die Sperr-Optionen nur,
-  wenn `lock()` tatsächlich erfolgreich war; sonst Hinweis + „Automatisch“.
+  bzw. als installierte PWA** und in iOS Safari gar nicht. Umsetzung (Schritt 6): Die Optionen
+  sind immer wählbar. Schlägt `lock()` fehl, erscheint ein Hinweis (installieren oder die App nutzen). Die Wahl
+  bleibt gespeichert und greift, sobald es möglich ist.
 - Layout-Umschaltung über `matchMedia('(orientation: landscape)')` + Mindestbreite; Tablets/Desktop
   immer Querformat-Layout. Zustand (offene Dialoge, Scroll, Eingaben) liegt im Store, nicht in
   Komponenten-State → überlebt den Wechsel des Layout-Baums.
-- Safe Areas: `env(safe-area-inset-*)` + `viewport-fit=cover`, in beiden Ausrichtungen getestet.
+- Safe Areas: `env(safe-area-inset-*)` + `viewport-fit=cover`, in beiden Ausrichtungen getestet. In der App
+  zuerst `--safe-area-inset-*` (setzt Capacitor 8 selbst, weil `env()` in älteren Android-WebViews unzuverlässig ist).
 
 ## 8. Lizenzen (Kurzfassung, Details in LICENSES.md)
 

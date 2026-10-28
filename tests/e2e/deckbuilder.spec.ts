@@ -118,3 +118,27 @@ test("Decks verwalten: umbenennen, kopieren, löschen", async ({ page }) => {
   await shot(page, "11-deckliste");
   await checkLayout(page);
 });
+
+test("Einstellungen: Ausrichtung und Hintergrund (bleiben nach Neuladen)", async ({ page }) => {
+  await page.getByRole("button", { name: "Einstellungen" }).click();
+  const dlg = page.getByRole("dialog", { name: "Einstellungen" });
+  await dlg.getByRole("radio", { name: "Immer Hochformat" }).click();
+  await expect(dlg.getByRole("radio", { name: "Immer Hochformat" })).toHaveAttribute("aria-checked", "true");
+  // Chromium mit Handy-Emulation erlaubt die Sperre → kein Hinweis (sonst erschiene „nur in der installierten App“).
+  await expect(dlg.getByRole("status")).toHaveCount(0);
+  await dlg.getByRole("radio", { name: "Holztisch" }).click();
+  await checkLayout(page);
+  await shot(page, "07-einstellungen");
+  await page.reload();
+  await page.getByRole("button", { name: "Einstellungen" }).click();
+  await expect(page.getByRole("radio", { name: "Immer Hochformat" })).toHaveAttribute("aria-checked", "true");
+  await expect(page.getByRole("radio", { name: "Holztisch" })).toHaveAttribute("aria-checked", "true");
+});
+
+test("PWA: Manifest und Icons", async ({ page }) => {
+  const res = await page.request.get("manifest.webmanifest");
+  expect(res.ok()).toBe(true);
+  const m = await res.json();
+  expect(m.lang).toBe("de");
+  for (const icon of m.icons) expect((await page.request.get(icon.src)).ok()).toBe(true);
+});

@@ -22,7 +22,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
       Abnahme-Combo komplett über die Oberfläche als Playwright-Test (hoch + quer).
 - [x] Schritt 5: Combo-Protokoll (kompakt, kopierbar, `engine/combolog.ts`), Rückgängig pro Aktion und pro
       Schritt (auch aus offenem Auswahlfenster), Gegnerhand im Verlauf verdeckt, wählbare Duell-Hintergründe.
-- [ ] Schritt 6: PWA + Android-APK
+- [x] Schritt 6: PWA (Manifest, eigene Icons, SW nur im Browser), Android-App (Capacitor 8): Datenpaket von Pages,
+      Bilder nativ → IndexedDB, Ausrichtung per Plugin, Zurück-Taste, Safe Areas. CI baut die APK → Vorabversion
+      `android-latest`. Einstellungen-Fenster (Ausrichtung, Hintergrund, Seitenleiste). Anleitung `docs/ANDROID.md`.
 - [ ] Schritt 7: Gegner-Antworten, Tauri-EXE, CI
 
 ## Entscheidungen
@@ -64,6 +66,14 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - „Aktion zurück“ = bis vor die letzte Main/Battle-Phase-Wahl (`engine/undo.ts`); „Schritt zurück“ = eine Antwort.
 - Einstellungen fürs Gerät (Hintergrund, Seitenleiste) in localStorage (`app/settings.ts`); Hintergründe sind
   reine CSS-Verläufe (keine Fremdgrafiken).
+- Plattformunterschiede (Browser ↔ App) nur in `src/platform.ts`: `isNative`, `dataBaseUrl()`, `applyOrientation`,
+  `nativeImage` (CapacitorHttp → IndexedDB `images`, max. 4 parallel), `installBackButton`.
+- Android: fester Debug-Schlüssel `android/app/debug.keystore` im Repo (sonst schlagen Updates der Debug-APK fehl);
+  Release-Schlüssel nur über Secrets `ANDROID_KEYSTORE_BASE64/_PASSWORD`, `ANDROID_KEY_ALIAS/_PASSWORD`.
+  versionCode = Laufnummer der Action. Android-SDK ist hier nicht installierbar → APK nur in CI bauen.
+- CSS-Klasse `.field` = Formularfeld; das Spielfeld heißt `.board` (früher Namenskollision).
+- Icons/Startbild: `npm run icons` erzeugt alles aus dem SVG-Motiv in `scripts/icons.ts` (Ergebnis committet).
+- Nach Änderungen an Capacitor-Plugins: `npx cap sync android` und `android/` mitcommitten.
 - Vorschaubilder in Knöpfen `aria-hidden`, sonst landet der Alt-Text im Knopfnamen.
 - Prompt-Modell (`prompts.ts`) ist die einzige Stelle, die Kern-Anfragen in Auswahlmöglichkeiten übersetzt –
   Konsole, Tests und spätere UI nutzen es gemeinsam.
@@ -78,6 +88,7 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - `src/app/duel.ts` – Duell-Zustand (Worker-Kommunikation, Sicherung)
 - `src/data/` – Bundle-Format, Node-Lader · `src/web/` – Browser-Lader, Kern im Browser
 - `src/engine/` – Sitzung, Prompts, Autopilot, Texte · `src/deck/` – .ydk
+- `src/platform.ts` – Browser/App-Unterschiede · `android/` – Capacitor-Projekt · `public/` – PWA-Icons
 - `src/fixtures/memento.ts` – Testdeck + Abnahme-Combo (Tests und Systemcheck)
 - `tests/` – Vitest (braucht `data/bundle`, sonst übersprungen)
 

@@ -16,9 +16,14 @@
     "typecheck": "tsc --noEmit",
     "postinstall": "patch-package",
     "build:site": "npm run build && node -e \"require('node:fs').cpSync('data/bundle','dist/data',{recursive:true})\"",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "icons": "node --disable-warning=ExperimentalWarning --import tsx scripts/icons.ts"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/screen-orientation": "^8.0.2",
     "dexie": "^4.4.7",
     "fastest-levenshtein": "^1.0.16",
     "minisearch": "^7.2.0",
@@ -28,6 +33,7 @@
     "zustand": "^5.0.16"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
