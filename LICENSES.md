@@ -16,4 +16,15 @@ AGPL-lizenzierten Regelkern einbindet. Gedacht für private Nutzung.
 Kartennamen, Kartentexte und Kartenbilder sind © Konami Digital Entertainment. Sie werden nur lokal
 auf dem eigenen Gerät gespeichert und nicht mit der App verteilt.
 
-Weitere npm-Abhängigkeiten (React, Vite, Dexie, MiniSearch, …) werden mit Schritt 2 ergänzt.
+## npm-Abhängigkeiten
+
+| Paket | Lizenz | Zweck |
+|---|---|---|
+| react, react-dom | MIT | Oberfläche |
+| ocgcore-wasm | MIT (+ AGPL-Kern) | Regelkern; lokal gepatcht, siehe `patches/` |
+| vite, @vitejs/plugin-react | MIT | Build |
+| typescript | Apache-2.0 | Typprüfung |
+| vitest | MIT | Tests |
+| tsx | MIT | TypeScript-Skripte in Node |
+| patch-package | MIT | Patch für ocgcore-wasm (SORT_CARD) |
+| @types/* | MIT | Typdefinitionen |

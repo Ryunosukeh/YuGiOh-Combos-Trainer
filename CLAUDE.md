@@ -13,7 +13,8 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 ## Stand
 - [x] Schritt 1: Recherche → `docs/ARCHITEKTUR.md`, `docs/NACHRICHTEN.md`, `LICENSES.md`.
       Spike `research/combo-spike.mjs` spielt die Abnahme-Combo headless komplett durch.
-- [ ] Schritt 2: Headless-Duell
+- [x] Schritt 2: Headless-Duell – Datenpaket (`npm run update-data`), GitHub Action → Pages, Engine
+      (`src/engine/`), Konsole (`npm run duel`), Browser-Systemcheck, 7 Tests inkl. Abnahme-Combo.
 - [ ] Schritt 3: Kartendaten + Deckbuilder + Massen-Import
 - [ ] Schritt 4: Duell-UI mobil (Hoch + Quer)
 - [ ] Schritt 5: Rückgängig + Combo-Protokoll
@@ -25,6 +26,28 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Rückgängig = Neuabspielen (Seed + Antwortprotokoll); Auto-Antworten werden nicht protokolliert.
 - Optionale Einzel-Auslöser kommen als `SELECT_EFFECTYN`; leere `SELECT_CHAIN` werden auto-gepasst.
 - `setcode` aus cards.cdb als BigInt lesen (64 Bit).
+- Kern mischt beim Start nicht → `DuelSession` mischt mit Seed (Host-Aufgabe wie beim EDOPro-Server).
+- ocgcore-wasm 0.1.6 hat einen SORT_CARD-Fehler → `patches/ocgcore-wasm+0.1.6.patch` (postinstall). Bei
+  Versionswechsel prüfen, ob der Patch noch nötig ist (Test „Karten sortieren“).
+- Antwortprotokoll enthält nur Nutzerentscheidungen; Auto-Antworten (leere Fenster, Dummy) sind deterministisch.
+- Prompt-Modell (`prompts.ts`) ist die einzige Stelle, die Kern-Anfragen in Auswahlmöglichkeiten übersetzt –
+  Konsole, Tests und spätere UI nutzen es gemeinsam.
+
+## Aufbau
+- `scripts/update-data.ts` – Datenpaket bauen · `scripts/duel-cli.ts` – Konsole
+- `src/data/` – Bundle-Format, Node-Lader · `src/web/` – Browser-Lader, Kern im Browser
+- `src/engine/` – Sitzung, Prompts, Autopilot, Texte · `src/deck/` – .ydk
+- `src/fixtures/memento.ts` – Testdeck + Abnahme-Combo (Tests und Systemcheck)
+- `tests/` – Vitest (braucht `data/bundle`, sonst übersprungen)
+
+## Umgebung (Cloud-Session)
+- Node-`fetch` braucht hier den Proxy: `--use-env-proxy` steht deshalb im npm-Skript `update-data`.
+- `pkill -f <muster>` nicht verwenden, wenn das Muster in der eigenen Befehlszeile steht.
+
+## Offene Punkte
+- Deutsche Kartennamen fehlen bei YGOPRODeck für alle Karten ab ~2023 (ARCHITEKTUR.md §5, §12).
+- GitHub Pages muss im Repo einmal auf „GitHub Actions“ gestellt werden (Settings → Pages).
+- Fehlermeldung an ocgcore-wasm (docs/upstream/) erst nach Freigabe einreichen.
 
 ## Entscheidungen aus ARCHITEKTUR.md §9
 - E1 Daten-Bundle: wird per GitHub Action gebaut und mit der Web-App auf GitHub Pages ausgeliefert (nicht in die Git-Historie committet). Repo ist öffentlich → Pages kostenlos.

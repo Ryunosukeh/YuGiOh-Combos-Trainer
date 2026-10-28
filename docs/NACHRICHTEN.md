@@ -3,6 +3,18 @@
 Quelle: `ygopro-core/common.h` (Stand `baa3881`), Parser: `ocgcore-wasm` 0.1.6 (`src/messages.ts`).
 
 Legende Spalte „UI“: ⬜ offen · ✅ umgesetzt · ➖ keine eigene UI nötig.
+
+**Stand Schritt 2:** Alle 21 Anfragetypen sind im UI-neutralen Auswahlmodell umgesetzt
+(`src/engine/prompts.ts`) und in der Konsole bedienbar (`npm run duel`). Die Spalte „UI“ bezieht sich auf
+die mobile Oberfläche (Schritt 4). Für Informations-Nachrichten gibt es Textzeilen in `src/engine/describe.ts`.
+
+Besonderheiten aus den Tests:
+- `SELECT_PLACE`, `SELECT_POSITION`, `ANNOUNCE_NUMBER`: Der vorangehende Hinweis (HINT/SELECTMSG) ist oft ein
+  **Kartencode**, kein Text.
+- `SORT_CARD`/`SORT_CHAIN`: In ocgcore-wasm 0.1.6 fehlerhaft serialisiert → lokaler Patch
+  (`patches/ocgcore-wasm+0.1.6.patch`), Regressionstest mit „Card Advance“.
+- `ANNOUNCE_NUMBER`: Antwort ist der **Index** der Option, nicht die Zahl.
+- `SELECT_SUM`: Gültigkeitsprüfung 1:1 aus dem Kern übernommen (`checkSum`).
 Spalte „Parser“: ✅ = von ocgcore-wasm typisiert geliefert.
 
 ## Anfragen (brauchen eine Antwort → bedienbare Oberfläche)

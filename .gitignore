@@ -1,6 +1,8 @@
 node_modules/
 dist/
-# Lizenzfreie bzw. Konami-Daten nie committen
+.cache/
+# Erzeugte Daten (Project Ignis / YGOPRODeck) nie committen
 data/
 *.cdb
 *.lflist.conf
+test-results/

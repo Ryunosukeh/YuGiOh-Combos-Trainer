@@ -1,0 +1,65 @@
+# Baut das Datenpaket (Project Ignis + YGOPRODeck) und die Web-App und veröffentlicht beides auf GitHub Pages.
+# Das Datenpaket landet NICHT in der Git-Historie, nur im Pages-Artefakt.
+name: Datenpaket und Web-App
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "23 3 * * 1" # montags 03:23 UTC: neue Karten, Skript-Fixes, Banliste
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Geklonte Quell-Repos und YGOPRODeck-Antwort zwischenspeichern (schont YGOPRODeck, spart Zeit).
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: data-sources-${{ github.run_id }}
+          restore-keys: data-sources-
+
+      - name: Datenpaket bauen
+        run: npm run update-data
+
+      - name: Typprüfung
+        run: npm run typecheck
+
+      - name: Engine-Tests (inkl. Abnahme-Combo)
+        run: npm test
+
+      - name: Web-App bauen
+        run: npm run build:site
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,6 +1,6 @@
 # Architektur – Yu-Gi-Oh! Combo-Sandbox
 
-Stand: 28.10.2026 · Schritt 1 (Recherche & Machbarkeit) · Status: **wartet auf OK**
+Stand: 28.10.2026 · Schritt 1 abgeschlossen, Schritt 2 umgesetzt (siehe §12)
 
 ## TL;DR
 
@@ -157,6 +157,11 @@ laden ist unzumutbar.
 
 ## 5. Deutsche Namen und Bilder (YGOPRODeck)
 
+> **Problem (festgestellt in Schritt 2):** YGOPRODeck liefert deutsche Texte nur bis Mitte 2022.
+> Von den Karten mit TCG-Erscheinungsjahr 2023–2026 haben **3 von ~2.300** einen deutschen Namen – das ganze
+> Memento-Testdeck fehlt. Gesamt: 11.979 von 14.845 Karten mit deutschem Text. Für den DE-Massenimport
+> braucht es eine zweite Quelle, siehe §12 „Offen“.
+
 Regeln laut YGOPRODeck-Doku (aus meinem Wissen, **in dieser Umgebung nicht live verifiziert**):
 - Rate-Limit 20 Requests/Sekunde, bei Überschreitung Sperre (1 h).
 - Bilder **einmal herunterladen und selbst speichern**, kein Hotlinking.
@@ -251,3 +256,43 @@ die überleben, und für die Actions brauche ich ein Repo (Name? öffentlich/pri
 Schritt 2 „Headless-Duell“: Projektgerüst (Vite+TS), `npm run update-data` (ohne YGOPRODeck-Teil, falls
 E2 noch offen), Duell-Worker mit DuelSession/Replay, Konsolen-Steuerung (Node-CLI, die jede Anfrage
 als nummerierte Optionen ausgibt), Abnahme-Combo als automatischer Vitest-Test.
+
+## 12. Erkenntnisse aus Schritt 2 (Headless-Duell)
+
+Umgesetzt:
+- `npm run update-data` → `data/bundle/` (7,9 MB): `cards.json.gz` (cards.cdb + release-*.cdb, DE-Texte von
+  YGOPRODeck), `scripts.pack.gz` + `scripts.idx.json` (13.567 Skripte als eine Datei mit Offset-Index),
+  `lflists.json`, `strings.json` (System-Texte DE/EN aus Distribution), `manifest.json` (Commits, Hashes).
+- GitHub Action `.github/workflows/pages.yml`: baut wöchentlich und bei jedem Push Datenpaket + Web-App,
+  führt die Tests aus und veröffentlicht auf GitHub Pages. Das Paket kommt nie in die Git-Historie.
+- Engine (`src/engine/`): `DuelSession` (Seed, Testhand, erster/zweiter Zug, Dummy-Gegner „passen“/„fragen“,
+  Rückgängig per Neuabspielen, Lebenspunkte), `prompts.ts` (alle 21 Anfragetypen als UI-neutrales Modell),
+  `autopilot.ts` (leere Kettenfenster, Dummy), `describe.ts` (Textzeilen).
+- Konsole: `npm run duel`. Browser: Systemcheck-Seite lädt Paket + Kern und spielt die Abnahme-Combo
+  (Chromium, 360×800 und 800×360: Laden ~0,7 s, Combo ~0,15 s).
+- Tests (`npm test`): Abnahme-Combo, Determinismus, Rückgängig, ungültige Antwort, Seed/Starthand,
+  Ash Blossom im Fragemodus, Sortieren.
+
+Befunde:
+1. **Der Kern mischt beim Start nicht** – das macht bei EDOPro der Server. Die Sitzung mischt Main Decks
+   deshalb selbst mit einem Seed-basierten Zufallsgenerator (`seed.ts`), bevor die Karten eingelegt werden.
+   Das ist Host-Aufgabe, keine Spielregel.
+2. **Zonenwahl:** Der Kern fragt bei jeder Beschwörung/Aktivierung die Zone ab (`SELECT_PLACE`). Für Combos
+   relevant (Link-Pfeile), daher bleibt es eine Nutzerentscheidung; eine Einstellung „Zone automatisch“
+   kommt in Schritt 4.
+3. **Kettenfenster mit Optionen:** Hat man einen Schnellzauber/Quick-Effekt, fragt der Kern nach jeder
+   Auflösung. Korrektes Verhalten; die UI braucht dafür einen schnellen „Passen“-Knopf.
+4. **Fehler in ocgcore-wasm 0.1.6:** `SORT_CARD`-Antworten werden mit falschem Längenbyte gesendet, der Kern
+   lehnt jede Sortierung ab. Lokaler 1-Zeilen-Patch über `patch-package` (`patches/`), Regressionstest
+   vorhanden, Fehlermeldung vorbereitet (`docs/upstream/ocgcore-wasm-sort-card.md`). Alle anderen
+   Antwortformate habe ich gegen den Kern-Quelltext geprüft – sie stimmen.
+5. **Lebenspunkte** liefert der Kern nicht per Abfrage; sie werden aus LPUPDATE/DAMAGE/RECOVER/PAY_LPCOST
+   mitgeführt (wie EDOPro).
+6. Hinweise (`HINT`/SELECTMSG) sind je nach Anfrage Systemtext, Kartentext (`code*16+n`) oder ein
+   reiner Kartencode – `describeString` behandelt alle drei.
+
+Offen:
+- **Deutsche Kartennamen für Karten ab 2023.** Kandidaten (brauchen Netzfreigabe in der Cloud-Umgebung):
+  (a) Yugipedia (Semantic-MediaWiki-API, Inhalte CC BY-SA 4.0, hat deutsche TCG-Namen),
+  (b) db.ygoresources.com (Daten aus der offiziellen Konami-Datenbank, alle Sprachen, keine Lizenzangabe),
+  (c) offizielle Konami-Kartendatenbank (Scraping, langsam, rechtlich am heikelsten).
