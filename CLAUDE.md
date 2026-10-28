@@ -27,7 +27,10 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - `setcode` aus cards.cdb als BigInt lesen (64 Bit).
 
 ## Offene Punkte (siehe ARCHITEKTUR.md §9)
-- E1 Hosting des Daten-Bundles · E2 YGOPRODeck in Cloud-Umgebung gesperrt · E3 GitHub-Repo · E4 React/Svelte
+- E1 Daten-Bundle: wird per GitHub Action gebaut und mit der Web-App auf GitHub Pages ausgeliefert (nicht in die Git-Historie committet). Sichtbarkeit des Repos offen.
+- E2 erledigt: YGOPRODeck freigegeben (API mit CORS `*`; Bilder-Host ohne CORS-Header → im Browser per <img>/Service Worker, in der App per nativem HTTP).
+- E3 Repo `YuGiOh-Combos-Trainer` muss der Nutzer anlegen (Session darf keine Repos erstellen).
+- E4 entschieden: React.
 
 ## Spike ausführen
 ```bash

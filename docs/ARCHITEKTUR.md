@@ -209,7 +209,11 @@ Umsetzung:
 - YGOPRODeck-Daten und alle Kartentexte/-bilder: © Konami; Nutzungsbedingungen von YGOPRODeck.
   Nur privat, nur lokal gecacht.
 
-## 9. Offene Entscheidungen (brauche dein OK)
+## 9. Entscheidungen
+
+Stand 28.10.2026: E2 erledigt (YGOPRODeck erreichbar, API mit CORS `*`, Bilder-Host ohne CORS-Header). E4: React. E1: Bundle wird von einer GitHub Action gebaut und zusammen mit der Web-App auf GitHub Pages ausgeliefert, nicht in die Git-Historie committet. E3: Repo `YuGiOh-Combos-Trainer` legt der Nutzer an.
+
+Ursprüngliche Optionen:
 
 **E1 – Wo liegt das Daten-Bundle?**
 - (a) *Empfehlung:* GitHub Pages deines Repos, gebaut von einer geplanten GitHub Action (z. B.
