@@ -27,12 +27,21 @@ function smallestValid(n: number, min: number, max: number, validate: (s: number
 }
 
 /**
- * Antwort des passiven Dummys: aktiviert nie etwas, passt immer, geht direkt in die End Phase.
+ * Antwort des Dummys: aktiviert nie etwas, passt immer, greift nie an.
  * Erzwungene Auswahlen (z. B. Handlimit) werden mit der kleinsten gültigen Auswahl beantwortet.
+ * Verhalten: "passive" tut nichts; "set" setzt pro Zug ein Monster verdeckt sowie Zauber/Fallen
+ * (aktiviert nie etwas, greift nie an) – keine KI, eine feste Regel, damit das Feld Ziele hat und die Hand
+ * nicht ständig überläuft.
  */
-export function dummyResponse(msg: OcgMessage, data: GameData): OcgResponse {
+export type DummyBehavior = "passive" | "set";
+
+export function dummyResponse(msg: OcgMessage, data: GameData, behavior: DummyBehavior = "passive"): OcgResponse {
   switch (msg.type) {
     case OcgMessageType.SELECT_IDLECMD:
+      if (behavior === "set" && msg.monster_sets.length)
+        return { type: OcgResponseType.SELECT_IDLECMD, action: SelectIdleCMDAction.SELECT_MONSTER_SET, index: 0 };
+      if (behavior === "set" && msg.spell_sets.length)
+        return { type: OcgResponseType.SELECT_IDLECMD, action: SelectIdleCMDAction.SELECT_SPELL_SET, index: 0 };
       return { type: OcgResponseType.SELECT_IDLECMD, action: msg.to_ep ? SelectIdleCMDAction.TO_EP : SelectIdleCMDAction.TO_BP, index: null };
     case OcgMessageType.SELECT_BATTLECMD:
       return { type: OcgResponseType.SELECT_BATTLECMD, action: msg.to_ep ? SelectBattleCMDAction.TO_EP : SelectBattleCMDAction.TO_M2, index: null };

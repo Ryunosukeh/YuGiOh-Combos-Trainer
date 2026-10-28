@@ -7,6 +7,7 @@ import { cardName } from "../engine/data";
 import { randomSeed } from "../engine/seed";
 import { CardImage } from "../ui/CardImage";
 import { Sheet } from "../ui/Sheet";
+import { SAMPLE_DECKS } from "../fixtures/sampleDecks";
 
 export function DuelSetup() {
   const { duelSetup, set, data } = useApp();
@@ -18,6 +19,10 @@ export function DuelSetup() {
   const [fill, setFill] = useState(false);
   const [seedText, setSeedText] = useState("");
   const [chainPrompts, setChainPrompts] = useState<"auto" | "all">("auto");
+  /** Gegnerdeck: "sample:<id>" oder "deck:<id>" (eigenes Deck). */
+  const [oppDeck, setOppDeck] = useState("sample:klassik");
+  const [behavior, setBehavior] = useState<"set" | "passive">("set");
+  const decks = useApp((s) => s.decks);
 
   const unique = useMemo(() => {
     if (!deck || !data) return [];
@@ -32,11 +37,18 @@ export function DuelSetup() {
   const inHand = (c: number) => hand.filter((x) => x === c).length;
   const seedOk = seedText.trim() === "" || /^\d{1,10}$/.test(seedText.trim());
 
+  const opponentDeck = () => {
+    const [kind, oid] = oppDeck.split(":");
+    if (kind === "deck") { const d = decks.find((x) => x.id === oid); if (d?.main.length) return { main: d.main, extra: d.extra }; }
+    return { main: (SAMPLE_DECKS.find((x) => x.id === oid) ?? SAMPLE_DECKS[0]).main, extra: [] };
+  };
+
   const go = () => {
     const seed = seedText.trim() ? Number(seedText.trim()) : randomSeed();
     start({
       deck: { main: deck.main, extra: deck.extra, side: deck.side },
       seed, goFirst, chainPrompts,
+      opponent: { deck: opponentDeck(), behavior },
       ...(mode === "test" && hand.length ? { hand, fillHand: fill } : {}),
     }, deck.id);
     set({ duelSetup: null, route: { screen: "duel" }, detail: null });
@@ -79,6 +91,24 @@ export function DuelSetup() {
             </ul>
           </>
         )}
+        <label className="field">
+          <span>Gegnerdeck</span>
+          <select value={oppDeck} onChange={(e) => setOppDeck(e.target.value)} aria-label="Gegnerdeck">
+            <optgroup label="Beispieldecks (schwach)">
+              {SAMPLE_DECKS.map((d) => <option key={d.id} value={`sample:${d.id}`}>{d.name}</option>)}
+            </optgroup>
+            {decks.some((d) => d.main.length) && (
+              <optgroup label="Eigene Decks">
+                {decks.filter((d) => d.main.length).map((d) => <option key={d.id} value={`deck:${d.id}`}>{d.name}</option>)}
+              </optgroup>
+            )}
+          </select>
+        </label>
+        <div className="segmented" role="radiogroup" aria-label="Gegnerverhalten">
+          <button role="radio" aria-checked={behavior === "set"} className={behavior === "set" ? "on" : ""} onClick={() => setBehavior("set")}>Gegner setzt Karten</button>
+          <button role="radio" aria-checked={behavior === "passive"} className={behavior === "passive" ? "on" : ""} onClick={() => setBehavior("passive")}>Gegner passiv</button>
+        </div>
+        <p className="muted small">Der Gegner aktiviert nie etwas und greift nie an. „Setzt Karten“: pro Zug ein Monster verdeckt und Zauber/Fallen gesetzt – so hat das Feld Ziele und seine Hand läuft nicht über.</p>
         <div className="segmented" role="radiogroup" aria-label="Antwortfenster">
           <button role="radio" aria-checked={chainPrompts === "auto"} className={chainPrompts === "auto" ? "on" : ""} onClick={() => setChainPrompts("auto")}>Ketten: nur wenn sinnvoll</button>
           <button role="radio" aria-checked={chainPrompts === "all"} className={chainPrompts === "all" ? "on" : ""} onClick={() => setChainPrompts("all")}>Ketten: immer fragen</button>

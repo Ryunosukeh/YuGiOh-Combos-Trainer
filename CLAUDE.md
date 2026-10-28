@@ -58,6 +58,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Tippen immer über `click` auslösen, nie über `pointerup` (`usePress`): Sonst trifft der nachfolgende
   Touch-Klick einen Knopf im gerade geöffneten Menü („Geisterklick“ → ungewolltes „Setzen“). Duell-Tests
   tippen deshalb mit `.tap()` statt `.click()`.
+- Gegner: Beispieldecks (`src/fixtures/sampleDecks.ts`, aus Namen erzeugt und per Test geprüft) oder eigenes
+  Deck. Verhalten „set“ (Standard in der UI: pro Zug ein Monster + Zauber/Fallen setzen, nie aktivieren/angreifen)
+  oder „passive“. Keine KI – feste, deterministische Regel im Autopiloten.
 - „Aktion zurück“ = bis vor die letzte Main/Battle-Phase-Wahl (`engine/undo.ts`); „Schritt zurück“ = eine Antwort.
 - Einstellungen fürs Gerät (Hintergrund, Seitenleiste) in localStorage (`app/settings.ts`); Hintergründe sind
   reine CSS-Verläufe (keine Fremdgrafiken).

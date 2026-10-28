@@ -64,7 +64,7 @@ h3 { font-size: 0.95rem; margin: 16px 0 8px; }
 .stack { display: flex; flex-direction: column; gap: 10px; }
 .row-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 12px 0; }
 .field { display: flex; flex-direction: column; gap: 6px; }
-.field input, .mini-search, .search-box input {
+.field input, .field select, .mini-search, .search-box input {
   min-height: var(--tap); border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel); padding: 0 12px;
 }
 .log, .export-text, .import-text {
@@ -386,3 +386,5 @@ h3 { font-size: 0.95rem; margin: 16px 0 8px; }
 .bg-choice { display: flex; align-items: center; gap: 8px; min-height: var(--tap); padding: 4px 10px; border-radius: var(--radius); border: 2px solid var(--line); background: var(--panel); cursor: pointer; font-weight: 600; }
 .bg-choice.on { border-color: var(--accent); }
 .bg-swatch { width: 28px; height: 28px; border-radius: 6px; flex: none; background: var(--mat, var(--panel-2)); border: 1px solid var(--line); }
+.field { text-align: left; align-self: stretch; }
+.field select { width: 100%; font-size: 1rem; }

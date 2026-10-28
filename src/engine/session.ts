@@ -5,7 +5,7 @@ import {
   type OcgCardData, type OcgCoreSync, type OcgDuelHandle, type OcgMessage, type OcgResponse,
 } from "ocgcore-wasm";
 import { toOcgCardData } from "../data/types";
-import { isEmptyChainWindow, dummyResponse } from "./autopilot";
+import { isEmptyChainWindow, dummyResponse, type DummyBehavior } from "./autopilot";
 import { cardName, type GameData } from "./data";
 import { isRequest } from "./prompts";
 import { createRng, expandSeed, shuffled } from "./seed";
@@ -30,6 +30,8 @@ export interface DuelConfig {
     hand?: number[];
     /** "pass": Dummy entscheidet alles selbst. "ask": Entscheidungen des Gegners werden dem Nutzer vorgelegt. */
     mode?: "pass" | "ask";
+    /** "passive" (Standard): tut nichts. "set": setzt pro Zug ein Monster und Zauber/Fallen, aktiviert nie. */
+    behavior?: DummyBehavior;
   };
   /** Leere Antwortfenster automatisch passen (Standard: ja). */
   autoPassEmpty?: boolean;
@@ -250,10 +252,10 @@ export class DuelSession {
     if (this.config.opponent?.mode === "ask") {
       // Zugsteuerung bleibt beim Dummy; alle echten Entscheidungen (Handtraps, Ziele …) trifft der Nutzer.
       const t = d.msg.type;
-      if (t === OcgMessageType.SELECT_IDLECMD || t === OcgMessageType.SELECT_BATTLECMD) return dummyResponse(d.msg, this.data);
+      if (t === OcgMessageType.SELECT_IDLECMD || t === OcgMessageType.SELECT_BATTLECMD) return dummyResponse(d.msg, this.data, this.config.opponent?.behavior);
       return null;
     }
-    return dummyResponse(d.msg, this.data);
+    return dummyResponse(d.msg, this.data, this.config.opponent?.behavior);
   }
 
   // ---------- Feldabfragen ----------
