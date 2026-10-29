@@ -271,8 +271,9 @@ Umgesetzt:
 - `npm run update-data` → `data/bundle/` (7,9 MB): `cards.json.gz` (cards.cdb + release-*.cdb, DE-Texte von
   YGOPRODeck), `scripts.pack.gz` + `scripts.idx.json` (13.567 Skripte als eine Datei mit Offset-Index),
   `lflists.json`, `strings.json` (System-Texte DE/EN aus Distribution), `manifest.json` (Commits, Hashes).
-- GitHub Action `.github/workflows/pages.yml`: baut wöchentlich und bei jedem Push Datenpaket + Web-App,
-  führt die Tests aus und veröffentlicht auf GitHub Pages. Das Paket kommt nie in die Git-Historie.
+- GitHub Action `.github/workflows/ci.yml` (bis Schritt 6 `pages.yml`): baut wöchentlich und bei jedem Push
+  Datenpaket + Web-App, führt die Tests aus und veröffentlicht auf GitHub Pages. Das Paket kommt nie in die
+  Git-Historie. Ab Schritt 7 zusätzlich APK + EXE → Vorabversion `latest`, PRs werden nur geprüft.
 - Engine (`src/engine/`): `DuelSession` (Seed, Testhand, erster/zweiter Zug, Dummy-Gegner „passen“/„fragen“,
   Rückgängig per Neuabspielen, Lebenspunkte), `prompts.ts` (alle 21 Anfragetypen als UI-neutrales Modell),
   `autopilot.ts` (leere Kettenfenster, Dummy), `describe.ts` (Textzeilen).

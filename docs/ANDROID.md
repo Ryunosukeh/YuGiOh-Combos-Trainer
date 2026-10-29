@@ -20,10 +20,10 @@ Kartenbilder, die noch nie angezeigt wurden, erscheinen offline als Platzhalter 
 
 ## Debug-APK installieren (zum Ausprobieren)
 
-Jeder Push auf `main` baut nach bestandenen Tests eine APK (GitHub Action „Datenpaket und Web-App“, Job `android`).
-Sie wird als Vorabversion **android-latest** veröffentlicht:
+Jeder Push auf `main` baut nach bestandenen Tests eine APK (GitHub Action „CI“, Job `android`). Sie wird zusammen mit
+der Windows-EXE als Vorabversion **latest** veröffentlicht (bis Schritt 6 hieß sie `android-latest`):
 
-https://github.com/Ryunosukeh/YuGiOh-Combos-Trainer/releases/tag/android-latest
+https://github.com/Ryunosukeh/YuGiOh-Combos-Trainer/releases/tag/latest
 
 1. Auf dem Handy die Seite öffnen und `combo-trainer-debug.apk` herunterladen.
 2. Datei antippen. Android fragt beim ersten Mal, ob der Browser „Apps aus unbekannten Quellen“ installieren darf:
@@ -62,7 +62,7 @@ In GitHub hinterlegen (Repo → Settings → Secrets and variables → Actions �
 | `ANDROID_KEY_ALIAS` | `combotrainer` (bzw. der gewählte Alias) |
 | `ANDROID_KEY_PASSWORD` | Passwort des Schlüssels (bei PKCS12-Keystores = Keystore-Passwort) |
 
-Ab dem nächsten Push enthält die Vorabversion zusätzlich `combo-trainer.apk`, die signierte Release-APK. Ohne die
+Ab dem nächsten Push enthält die Vorabversion **latest** zusätzlich `combo-trainer.apk`, die signierte Release-APK. Ohne die
 Secrets wird nur die Debug-APK gebaut.
 
 Lokal bauen (Android Studio bzw. Android SDK nötig):

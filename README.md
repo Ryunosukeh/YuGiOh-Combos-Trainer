@@ -5,12 +5,13 @@ EDOPro-Regelkern [ygopro-core](https://github.com/edo9300/ygopro-core) (als WebA
 von [Project Ignis](https://github.com/ProjectIgnis/CardScripts). Kein KI-Gegner: Der Gegner ist ein passiver Dummy,
 dem man optional Handtraps geben kann.
 
-**Stand:** Schritt 6 von 7. Regelkern, Deckbuilder mit Massen-Import, Duell-Oberfläche (Hoch-/Querformat),
-Rückgängig, Combo-Protokoll, PWA und Android-App laufen. Details: [`CLAUDE.md`](CLAUDE.md), [`docs/ARCHITEKTUR.md`](docs/ARCHITEKTUR.md).
+**Stand:** alle 7 Schritte umgesetzt. Regelkern, Deckbuilder mit Massen-Import, Duell-Oberfläche (Hoch-/Querformat),
+Rückgängig, Combo-Protokoll, Gegner-Antworten (du entscheidest für seine Handtraps), PWA, Android-App und
+Windows-EXE laufen. Details: [`CLAUDE.md`](CLAUDE.md), [`docs/ARCHITEKTUR.md`](docs/ARCHITEKTUR.md).
 
 - **Web-App / PWA:** https://ryunosukeh.github.io/YuGiOh-Combos-Trainer/
-- **Android-APK:** [Vorabversion „android-latest“](https://github.com/Ryunosukeh/YuGiOh-Combos-Trainer/releases/tag/android-latest).
-  Installation und signierte Release-APK: [`docs/ANDROID.md`](docs/ANDROID.md)
+- **Android-APK und Windows-EXE:** [Vorabversion „latest“](https://github.com/Ryunosukeh/YuGiOh-Combos-Trainer/releases/tag/latest).
+  Anleitungen: [`docs/ANDROID.md`](docs/ANDROID.md) (auch signierte Release-APK), [`docs/WINDOWS.md`](docs/WINDOWS.md)
 
 ## Loslegen
 

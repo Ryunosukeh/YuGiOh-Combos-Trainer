@@ -1,23 +1,27 @@
-# Baut das Datenpaket (Project Ignis + YGOPRODeck) und die Web-App und veröffentlicht beides auf GitHub Pages.
-# Das Datenpaket landet NICHT in der Git-Historie, nur im Pages-Artefakt.
-# Nach bestandenen Tests: Android-APK bauen und als Vorabversion „android-latest“ veröffentlichen.
-name: Datenpaket und Web-App
+# CI für alle Plattformen:
+#   build    – Datenpaket (Project Ignis + YGOPRODeck), Typprüfung, Engine- und Oberflächentests, Web-App
+#   deploy   – Web-App + Datenpaket auf GitHub Pages (das Datenpaket landet NIE in der Git-Historie)
+#   android  – APK (Capacitor)            ┐ nach bestandenen Tests, parallel
+#   windows  – EXE + Installer (Tauri)    ┘
+#   release  – Vorabversion „latest“ mit APK und EXE (nur main)
+# Pull Requests: build + android + windows (prüfen, ob alles baut), ohne Veröffentlichung.
+name: CI
 
 on:
   push:
     branches: [main]
+  pull_request:
   schedule:
     - cron: "23 3 * * 1" # montags 03:23 UTC: neue Karten, Skript-Fixes, Banliste
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  # PRs: ältere Läufe abbrechen. main: nacheinander (Pages/Release nicht gleichzeitig schreiben).
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
@@ -84,12 +88,17 @@ jobs:
           if-no-files-found: ignore
 
       - uses: actions/upload-pages-artifact@v4
+        if: github.event_name != 'pull_request'
         with:
           path: dist
 
   deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -98,12 +107,10 @@ jobs:
         uses: actions/deploy-pages@v4
 
   android:
-    # Nur bei Code-Änderungen (nicht beim wöchentlichen Datenlauf – die App lädt die Daten ohnehin von Pages).
+    # Nicht beim wöchentlichen Datenlauf – die Apps laden die Daten ohnehin von Pages.
     if: github.event_name != 'schedule'
     needs: build
     runs-on: ubuntu-latest
-    permissions:
-      contents: write # Vorabversion mit der APK anlegen
     env:
       # Secrets sind in „if:“ nicht direkt nutzbar → als Merker.
       HAS_RELEASE_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
@@ -151,23 +158,86 @@ jobs:
           TASKS="assembleDebug"
           [ -n "$ANDROID_KEYSTORE_FILE" ] && TASKS="$TASKS assembleRelease"
           ./gradlew $TASKS -PversionCode=${{ github.run_number }} -PversionName="$VERSION" --no-daemon
-          mkdir -p ../apk
-          cp app/build/outputs/apk/debug/app-debug.apk ../apk/combo-trainer-debug.apk
-          [ -f app/build/outputs/apk/release/app-release.apk ] && cp app/build/outputs/apk/release/app-release.apk ../apk/combo-trainer.apk
-          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          mkdir -p ../out
+          cp app/build/outputs/apk/debug/app-debug.apk ../out/combo-trainer-debug.apk
+          [ -f app/build/outputs/apk/release/app-release.apk ] && cp app/build/outputs/apk/release/app-release.apk ../out/combo-trainer.apk
+          true
 
       - uses: actions/upload-artifact@v4
         with:
-          name: android-apk
-          path: apk/
+          name: android
+          path: out/
 
-      - name: Als Vorabversion „android-latest“ veröffentlichen
-        if: github.ref == 'refs/heads/main'
-        env:
-          GH_TOKEN: ${{ github.token }}
+  windows:
+    if: github.event_name != 'schedule'
+    needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          check-latest: true
+          cache: npm
+
+      # Rust ist auf den Windows-Runnern vorinstalliert; Cache spart beim nächsten Lauf das Kompilieren der Abhängigkeiten.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: npm ci
+
+      # Wie die Android-App: ohne Datenpaket, die EXE lädt es von GitHub Pages.
+      - name: EXE und Installer bauen (Tauri)
+        run: npx tauri build --bundles nsis
+
+      - name: Dateien einsammeln
         shell: bash
         run: |
+          mkdir -p out
+          cp src-tauri/target/release/combo-trainer.exe out/combo-trainer-portable.exe
+          cp src-tauri/target/release/bundle/nsis/*-setup.exe out/combo-trainer-setup.exe
+          ls -la out
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: out/
+
+  release:
+    if: github.event_name != 'pull_request' && github.event_name != 'schedule' && github.ref == 'refs/heads/main'
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Vorabversion anlegen
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+
+      - name: Vorabversion „latest“ veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          ls -la out
+          # Frühere Einzel-Vorabversion der Android-App (bis Schritt 6) aufräumen.
           gh release delete android-latest --yes --cleanup-tag || true
-          gh release create android-latest apk/*.apk --prerelease --target "$GITHUB_SHA" \
-            --title "Android-App (aktueller Stand, $VERSION)" \
-            --notes "Automatisch gebaut aus ${GITHUB_SHA::7}. Installation: siehe docs/ANDROID.md. combo-trainer-debug.apk = Debug-Build (fester Debug-Schlüssel, Updates lassen sich drüberinstallieren)."
+          gh release delete latest --yes --cleanup-tag || true
+          {
+            echo "Automatisch gebaut aus ${GITHUB_SHA::7} (Lauf ${{ github.run_number }}). Anleitung: docs/ANDROID.md und docs/WINDOWS.md."
+            echo
+            echo "| Datei | Wofür |"
+            echo "|---|---|"
+            echo "| combo-trainer-debug.apk | Android (Debug-Build, Updates lassen sich drüberinstallieren) |"
+            [ -f out/combo-trainer.apk ] && echo "| combo-trainer.apk | Android, signierte Release-APK |"
+            echo "| combo-trainer-setup.exe | Windows 10/11, Installation ohne Adminrechte |"
+            echo "| combo-trainer-portable.exe | Windows 10/11, ohne Installation starten |"
+            echo
+            echo "Web-App ohne Installation: https://ryunosukeh.github.io/YuGiOh-Combos-Trainer/"
+          } > notes.md
+          gh release create latest out/* --prerelease --target "$GITHUB_SHA" \
+            --title "Aktueller Stand (Lauf ${{ github.run_number }})" --notes-file notes.md

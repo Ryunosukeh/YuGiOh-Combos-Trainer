@@ -24,8 +24,10 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
       Schritt (auch aus offenem Auswahlfenster), Gegnerhand im Verlauf verdeckt, wählbare Duell-Hintergründe.
 - [x] Schritt 6: PWA (Manifest, eigene Icons, SW nur im Browser), Android-App (Capacitor 8): Datenpaket von Pages,
       Bilder nativ → IndexedDB, Ausrichtung per Plugin, Zurück-Taste, Safe Areas. CI baut die APK → Vorabversion
-      `android-latest`. Einstellungen-Fenster (Ausrichtung, Hintergrund, Seitenleiste). Anleitung `docs/ANDROID.md`.
-- [ ] Schritt 7: Gegner-Antworten, Tauri-EXE, CI
+      Einstellungen-Fenster (Ausrichtung, Hintergrund, Seitenleiste). Anleitung `docs/ANDROID.md`.
+- [x] Schritt 7: Gegner-Antworten („Ich antworte für den Gegner“, Gegnerhand mit Handtraps), Windows-EXE (Tauri 2,
+      `src-tauri/`, `docs/WINDOWS.md`), CI `.github/workflows/ci.yml`: Tests → Pages + APK + EXE → Vorabversion
+      `latest`; PRs nur prüfen. 43 Vitest + 24 Playwright.
 
 ## Entscheidungen
 - Kern: `ocgcore-wasm` 0.1.6 (npm), **sync**-Variante im Web Worker.
@@ -79,6 +81,9 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
   versionCode = Laufnummer der Action. Android-SDK ist hier nicht installierbar → APK nur in CI bauen.
 - CSS-Klasse `.field` = Formularfeld; das Spielfeld heißt `.board` (früher Namenskollision).
 - Icons/Startbild: `npm run icons` erzeugt alles aus dem SVG-Motiv in `scripts/icons.ts` (Ergebnis committet).
+- Windows-App: Tauri 2 als reine Hülle (keine Rust-Befehle/Plugins); `isTauri` = `__TAURI_INTERNALS__` in window.
+  EXE unsigniert (SmartScreen-Hinweis in docs/WINDOWS.md). Bilder nur im WebView2-HTTP-Cache.
+- CI-Vorabversion heißt `latest` (APK + EXE); die alte `android-latest` löscht der Release-Job.
 - Nach Änderungen an Capacitor-Plugins: `npx cap sync android` und `android/` mitcommitten.
 - Vorschaubilder in Knöpfen `aria-hidden`, sonst landet der Alt-Text im Knopfnamen.
 - Prompt-Modell (`prompts.ts`) ist die einzige Stelle, die Kern-Anfragen in Auswahlmöglichkeiten übersetzt –
@@ -95,6 +100,7 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - `src/data/` – Bundle-Format, Node-Lader · `src/web/` – Browser-Lader, Kern im Browser
 - `src/engine/` – Sitzung, Prompts, Autopilot, Texte · `src/deck/` – .ydk
 - `src/platform.ts` – Browser/App-Unterschiede · `android/` – Capacitor-Projekt · `public/` – PWA-Icons
+- `src-tauri/` – Windows-App (Tauri) · `.github/workflows/ci.yml` – CI für Web, APK, EXE
 - `src/fixtures/memento.ts` – Testdeck + Abnahme-Combo (Tests und Systemcheck)
 - `tests/` – Vitest (braucht `data/bundle`, sonst übersprungen)
 
@@ -103,6 +109,8 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
   mit `proxy: { server: $HTTPS_PROXY, bypass: "localhost" }` und `ignoreHTTPSErrors` (nicht in Tests).
 - Hintergrund-Server (`vite preview`) nach Gebrauch per PID beenden (`ps … | grep '[v]ite preview'`).
 - Node-`fetch` braucht hier den Proxy: `NODE_USE_ENV_PROXY=1 npm run update-data`.
+- Tauri lokal: `apt-get install libwebkit2gtk-4.1-dev librsvg2-dev libayatana-appindicator3-dev libxdo-dev`, dann
+  `npx tauri build --no-bundle` (Linux-Build, ~3 min); Start unter `xvfb-run` (github.io hier nicht erreichbar).
 - `pkill -f <muster>` nicht verwenden, wenn das Muster in der eigenen Befehlszeile steht.
 
 ## Offene Punkte
