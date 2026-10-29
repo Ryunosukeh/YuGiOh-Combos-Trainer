@@ -82,7 +82,7 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
   `nativeImage` (CapacitorHttp → IndexedDB `images`, max. 4 parallel), `installBackButton`.
 - Android: fester Debug-Schlüssel `android/app/debug.keystore` im Repo (sonst schlagen Updates der Debug-APK fehl);
   Release-Schlüssel nur über Secrets `ANDROID_KEYSTORE_BASE64/_PASSWORD`, `ANDROID_KEY_ALIAS/_PASSWORD`.
-  versionCode = Laufnummer der Action. Android-SDK ist hier nicht installierbar → APK nur in CI bauen.
+  versionCode = Laufnummer der Action + 100 (alter Workflow kam bis 14; muss immer steigen). Android-SDK ist hier nicht installierbar → APK nur in CI bauen.
 - CSS-Klasse `.field` = Formularfeld; das Spielfeld heißt `.board` (früher Namenskollision).
 - Icons/Startbild: `npm run icons` erzeugt alles aus dem SVG-Motiv in `scripts/icons.ts` (Ergebnis committet).
 - Windows-App: Tauri 2 als reine Hülle (keine Rust-Befehle/Plugins); `isTauri` = `__TAURI_INTERNALS__` in window.

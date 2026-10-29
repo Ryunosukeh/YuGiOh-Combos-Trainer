@@ -91,4 +91,4 @@ Ergebnis: `android/app/build/outputs/apk/release/app-release.apk`. Für den Play
 - Der Service Worker läuft nur im Browser, nicht in der App.
 - Ränder (Notch, Navigationsleiste): Capacitor setzt `--safe-area-inset-*`, die CSS nutzt sie vor `env(…)`.
 - Icons und Startbild werden aus einem eigenen SVG-Motiv erzeugt: `npm run icons` (`scripts/icons.ts`).
-- Versionsnummer der APK = Laufnummer der GitHub Action. Dadurch ist jede neue APK ein gültiges Update.
+- Versionsnummer der APK = Laufnummer der GitHub Action + 100 (steigt immer). Dadurch ist jede neue APK ein gültiges Update.

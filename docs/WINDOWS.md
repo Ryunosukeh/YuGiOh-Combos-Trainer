@@ -2,7 +2,7 @@
 
 Die Desktop-App ist eine schlanke Hülle ([Tauri 2](https://tauri.app), MIT/Apache-2.0) um dieselbe Web-App: gleicher
 Regelkern, gleiche Oberfläche (am PC immer im Querformat-Layout). Sie nutzt den in Windows 10/11 eingebauten
-WebView2 (Edge), deshalb ist sie nur ~10 MB groß.
+WebView2 (Edge), deshalb ist sie klein (Installer ca. 3 MB, portable EXE ca. 5 MB).
 
 ## Herunterladen
 
