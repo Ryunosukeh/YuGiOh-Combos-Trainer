@@ -212,10 +212,15 @@ jobs:
     permissions:
       contents: write # Vorabversion anlegen
     steps:
+      # Nur APK und EXE (nicht die Screenshots der Tests).
       - uses: actions/download-artifact@v4
         with:
+          name: android
           path: out
-          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows
+          path: out
 
       - name: Vorabversion „latest“ veröffentlichen
         env:
@@ -224,6 +229,10 @@ jobs:
         shell: bash
         run: |
           ls -la out
+          # Erst prüfen, dann die alte Version löschen – sonst steht bei einem Fehler gar nichts mehr zum Download.
+          for f in combo-trainer-debug.apk combo-trainer-setup.exe combo-trainer-portable.exe; do
+            [ -f "out/$f" ] || { echo "::error::$f fehlt"; exit 1; }
+          done
           # Frühere Einzel-Vorabversion der Android-App (bis Schritt 6) aufräumen.
           gh release delete android-latest --yes --cleanup-tag || true
           gh release delete latest --yes --cleanup-tag || true
