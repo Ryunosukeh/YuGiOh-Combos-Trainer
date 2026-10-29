@@ -1,12 +1,13 @@
 // Geräte-Einstellungen (Ausrichtung, Duell-Hintergrund, Seitenleiste) – auf der Startseite und im Duell-Menü.
 import { DUEL_BACKGROUNDS, ORIENTATIONS, useSettings } from "../app/settings";
-import { isNative } from "../platform";
+import { isNative, isTauri } from "../platform";
 
 export function SettingsFields() {
   const { duelBg, sidebar, orientation, orientationOk, setSettings } = useSettings();
   return (
     <>
-      <div className="field">
+      {/* Am PC gibt es nichts zu drehen. */}
+      {!isTauri && <div className="field">
         <span>Bildschirmausrichtung</span>
         <div className="segmented" role="radiogroup" aria-label="Bildschirmausrichtung">
           {ORIENTATIONS.map((o) => (
@@ -16,7 +17,7 @@ export function SettingsFields() {
         {!orientationOk && !isNative && (
           <p className="muted small" role="status">Dieser Browser erlaubt das Festlegen nur in der installierten App bzw. im Vollbild. Tipp: über das Browser-Menü „Zum Startbildschirm hinzufügen“ installieren – oder die Android-App nutzen.</p>
         )}
-      </div>
+      </div>}
       <div className="field">
         <span>Duell-Hintergrund</span>
         <div className="bg-choices" role="radiogroup" aria-label="Hintergrund">

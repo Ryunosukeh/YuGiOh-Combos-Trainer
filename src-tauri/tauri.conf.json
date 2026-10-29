@@ -1,0 +1,50 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
+  "productName": "Combo-Trainer",
+  "version": "../package.json",
+  "identifier": "io.github.ryunosukeh.combotrainer",
+  "build": {
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:5173",
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Yu-Gi-Oh! Combo-Trainer",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 800,
+        "minHeight": 480,
+        "resizable": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "publisher": "Louis Petermann",
+    "copyright": "AGPL-3.0 · Karten © Konami (nicht enthalten)",
+    "shortDescription": "Yu-Gi-Oh!-Combos üben",
+    "longDescription": "Solo-Sandbox zum Üben von Yu-Gi-Oh!-Combos. Regeln: ygopro-core (EDOPro) und Project-Ignis-Skripte.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser",
+        "languages": ["German"],
+        "displayLanguageSelector": false
+      }
+    }
+  }
+}

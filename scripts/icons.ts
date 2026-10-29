@@ -1,6 +1,8 @@
 // Erzeugt alle App-Icons (PWA + Android) und Android-Startbilder aus einem eigenen SVG-Motiv.
 // Aufruf: npm run icons (braucht das vorinstallierte Chromium von Playwright). Ergebnis wird committet.
-import { mkdirSync, writeFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { chromium } from "@playwright/test";
 
@@ -76,7 +78,16 @@ async function main() {
   for (const [dir, [w, h]] of Object.entries(sizes)) await render(`${res}/${dir}/splash.png`, w, h, splash(w, h));
   writeFileSync(`${res}/values/ic_launcher_background.xml`,
     `<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="ic_launcher_background">${BG1}</color>\n</resources>\n`);
+  // Desktop (Tauri): 1024er-Vorlage → ICO/ICNS/PNG über `tauri icon` (nur Desktop-Größen behalten).
+  const tmp = mkdtempSync(path.join(os.tmpdir(), "icons-"));
+  const master = path.join(tmp, "app-icon.png");
+  await render(master, 1024, 1024, svg(1024, { bg: true, pad: -12 }));
   await browser.close();
+  const out = path.join(root, "src-tauri/icons");
+  rmSync(out, { recursive: true, force: true });
+  execFileSync(process.platform === "win32" ? "npx.cmd" : "npx", ["tauri", "icon", master, "-o", out], { stdio: "inherit" });
+  for (const extra of ["android", "ios"]) rmSync(path.join(out, extra), { recursive: true, force: true });
+  rmSync(tmp, { recursive: true, force: true });
   console.log("Icons erzeugt.");
 }
 

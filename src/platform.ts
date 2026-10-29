@@ -1,15 +1,17 @@
-// Unterschiede zwischen Browser/PWA und Android-App (Capacitor).
+// Unterschiede zwischen Browser/PWA, Android-App (Capacitor) und Desktop-App (Tauri).
 import { Capacitor, CapacitorHttp } from "@capacitor/core";
 import { ScreenOrientation } from "@capacitor/screen-orientation";
 import { db } from "./app/db";
 
 export const isNative = Capacitor.isNativePlatform();
+/** Desktop-App (Tauri, Windows-EXE): reine Hülle um die Web-App, ohne eigene Tauri-Befehle. */
+export const isTauri = typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
 
-/** Veröffentlichte Web-App; die Android-App lädt das Datenpaket von dort (GitHub Pages erlaubt CORS). */
+/** Veröffentlichte Web-App; Android- und Desktop-App laden das Datenpaket von dort (GitHub Pages erlaubt CORS). */
 export const PAGES_URL = "https://ryunosukeh.github.io/YuGiOh-Combos-Trainer/";
 
 export function dataBaseUrl(): string {
-  return new URL("data/", isNative ? PAGES_URL : document.baseURI).toString();
+  return new URL("data/", isNative || isTauri ? PAGES_URL : document.baseURI).toString();
 }
 
 // ---------- Bildschirmausrichtung ----------

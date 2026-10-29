@@ -5,7 +5,13 @@ import { BUNDLE_FILES, BUNDLE_FORMAT, type CardsFile, type Manifest } from "../d
 export type Progress = (step: string) => void;
 
 async function fetchBytes(url: string): Promise<Uint8Array> {
-  const res = await fetch(url);
+  let res: Response;
+  try {
+    res = await fetch(url);
+  } catch {
+    // Netzwerkfehler sagen nur „Failed to fetch“/„Load failed“ → verständlich machen, mit Adresse.
+    throw new Error(`Keine Verbindung zu ${new URL(url).host} – beim ersten Start wird Internet gebraucht (${url})`);
+  }
   if (!res.ok) throw new Error(`${url}: HTTP ${res.status}`);
   return new Uint8Array(await res.arrayBuffer());
 }

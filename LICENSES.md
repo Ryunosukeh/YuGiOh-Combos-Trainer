@@ -36,3 +36,4 @@ auf dem eigenen Gerät gespeichert und nicht mit der App verteilt.
 | vite-plugin-pwa (Workbox) | MIT | Service Worker (Bild-Cache) |
 | @playwright/test | Apache-2.0 | Oberflächentests, Icons rendern |
 | @capacitor/core, /android, /cli, /app, /screen-orientation | MIT | Android-App |
+| @tauri-apps/cli, Rust-Crate `tauri` (+ Abhängigkeiten) | MIT oder Apache-2.0 | Windows-App (EXE) |
