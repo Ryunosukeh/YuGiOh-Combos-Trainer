@@ -145,6 +145,28 @@ describe.skipIf(!hasData)("Engine", () => {
     s.destroy();
   });
 
+  it("Gegner-Modus „manual“: Nutzer spielt den Zug des Gegners", () => {
+    const deck = SAMPLE_DECKS.find((x) => x.id === "klassik")!;
+    const s = DuelSession.start(core, data, { ...testhand, opponent: { deck: { main: deck.main, extra: [] }, mode: "manual" } });
+    const d = new Driver(s);
+    d.endPhase();
+    // Zug 2 gehört dem Gegner – und die Main-Phase-Wahl liegt beim Nutzer, nicht beim Dummy.
+    while (s.decision?.forOpponent && s.decision.msg.type !== OcgMessageType.SELECT_IDLECMD) d.passChains();
+    expect(s.turn).toBe(2);
+    expect(s.decision?.forOpponent).toBe(true);
+    const idle = d.prompt;
+    if (idle.kind !== "menu") throw new Error("Menü erwartet");
+    const summon = idle.options.find((o) => o.tag === "summon" || o.tag === "mset")!;
+    expect(summon).toBeDefined();
+    s.respond(summon.response);
+    d.skipPlacement();
+    d.endPhase();
+    while (s.decision?.forOpponent) d.passChains();
+    expect(s.turn).toBe(3);
+    expect(s.cards(1, OcgLocation.MZONE).filter(Boolean).length).toBe(1);
+    s.destroy();
+  });
+
   it("Karten sortieren (SORT_CARD) – deckt den Patch für ocgcore-wasm 0.1.6 ab", () => {
     // Card Advance: bis zu 5 oberste Karten ansehen und in beliebiger Reihenfolge zurücklegen.
     const CARD_ADVANCE = 52112003;

@@ -32,8 +32,9 @@ export interface DuelConfig {
      * "pass": Dummy entscheidet alles selbst. "ask": Du entscheidest für den Gegner, ob er antwortet (Kettenfenster,
      * optionale Effekte) und alles innerhalb einer Kette, an der er beteiligt ist (Ziele, Kosten …).
      * Zugsteuerung, Setzen, Zonen und Handlimit außerhalb von Ketten bleiben beim Dummy.
+     * "manual": Du spielst den Gegner komplett (auch seinen Zug: Beschwörungen, Phasen, Angriffe).
      */
-    mode?: "pass" | "ask";
+    mode?: "pass" | "ask" | "manual";
     /** "passive" (Standard): tut nichts. "set": setzt pro Zug ein Monster und Zauber/Fallen, aktiviert nie. */
     behavior?: DummyBehavior;
   };
@@ -265,6 +266,7 @@ export class DuelSession {
       if (d.msg.spe_count === 0 || ownLastLink) return { type: OcgResponseType.SELECT_CHAIN, index: null };
     }
     if (!d.forOpponent) return null;
+    if (this.config.opponent?.mode === "manual") return null;
     if (this.config.opponent?.mode === "ask") {
       const m = d.msg;
       // Antworten (Handtraps, optionale Effekte) entscheidet der Nutzer – Pflicht-Kette mit nur einer Wahl nicht.

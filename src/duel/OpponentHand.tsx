@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { useApp } from "../app/store";
 import { cardName } from "../engine/data";
+import type { OpponentPrefs } from "../app/settings";
 
 /** Gängige Handtraps als Schnellauswahl (Passcodes; Anzeige deutsch aus den Kartendaten). */
 export const HANDTRAPS = [
@@ -20,8 +21,14 @@ export const HANDTRAPS = [
 ];
 export const MAX_OPP_HAND = 10;
 
+const MODES: { id: OpponentPrefs["mode"]; name: string }[] = [
+  { id: "pass", name: "Gegner antwortet nie" },
+  { id: "ask", name: "Ich antworte für den Gegner" },
+  { id: "manual", name: "Ich spiele den Gegner" },
+];
+
 export function OpponentHand({ hand, setHand, mode, setMode }: {
-  hand: number[]; setHand(h: number[]): void; mode: "ask" | "pass"; setMode(m: "ask" | "pass"): void;
+  hand: number[]; setHand(h: number[]): void; mode: OpponentPrefs["mode"]; setMode(m: OpponentPrefs["mode"]): void;
 }) {
   const { data, search } = useApp();
   const [query, setQuery] = useState("");
@@ -31,7 +38,7 @@ export function OpponentHand({ hand, setHand, mode, setMode }: {
   const add = (code: number) => {
     if (full) return;
     // Erste Handtrap: Antworten des Gegners einschalten – sonst würde sie nie benutzt.
-    if (!hand.length) setMode("ask");
+    if (!hand.length && mode === "pass") setMode("ask");
     setHand([...hand, code]);
   };
   const quick = HANDTRAPS.filter((c) => data.cards.has(c));
@@ -59,14 +66,17 @@ export function OpponentHand({ hand, setHand, mode, setMode }: {
           ))}
         </div>
       )}
-      <div className="segmented" role="radiogroup" aria-label="Gegner-Antworten">
-        <button role="radio" aria-checked={mode === "ask"} className={mode === "ask" ? "on" : ""} onClick={() => setMode("ask")}>Ich antworte für den Gegner</button>
-        <button role="radio" aria-checked={mode === "pass"} className={mode === "pass" ? "on" : ""} onClick={() => setMode("pass")}>Gegner antwortet nie</button>
+      <div className="segmented stacked" role="radiogroup" aria-label="Gegner-Antworten">
+        {MODES.map((m) => (
+          <button key={m.id} role="radio" aria-checked={mode === m.id} className={mode === m.id ? "on" : ""} onClick={() => setMode(m.id)}>{m.name}</button>
+        ))}
       </div>
       <p className="muted small">
         „Ich antworte für den Gegner“: Kann der Gegner auf deine Züge reagieren (z. B. Ash Blossom auf deine Suche), fragt dich die
-        App rot markiert, ob er es tut – samt Zielen. So übst du, durch Handtraps durchzuspielen. Seine Hand siehst du
-        über „Gegner: n“ neben deiner Hand.
+        App rot markiert, ob er es tut – samt Zielen. So übst du, durch Handtraps durchzuspielen.
+        „Ich spiele den Gegner“: Du triffst alle seine Entscheidungen, auch in seinem Zug (Beschwörungen, Setzen, Phasen,
+        Angriffe) – z. B. um dir ein Board zu bauen, gegen das du dann spielst. Seine Hand siehst du in beiden Fällen über
+        „Gegner: n“ neben deiner Hand.
       </p>
     </div>
   );

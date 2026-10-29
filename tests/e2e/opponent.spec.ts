@@ -2,10 +2,11 @@
 import { expect, test } from "@playwright/test";
 import { ACCEPTANCE_LIST } from "../acceptance-list";
 import { checkLayout } from "./layout";
-import { act, place, prompt, settle, shot, trigger } from "./duel-helpers";
+import { act, passChains, place, prompt, settle, shot, trigger } from "./duel-helpers";
+import type { Page } from "@playwright/test";
 
-test("Ash Blossom des Gegners: du entscheidest, Suche wird annulliert", async ({ page }) => {
-  test.setTimeout(120_000);
+/** Memento-Deck importieren und Duell-Start mit Testhand Enghexe öffnen (Duell noch nicht gestartet). */
+async function openSetup(page: Page) {
   await page.route("https://images.ygoprodeck.com/**", (r) => r.abort());
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Meine Decks" })).toBeVisible({ timeout: 30_000 });
@@ -18,6 +19,11 @@ test("Ash Blossom des Gegners: du entscheidest, Suche wird annulliert", async ({
   await page.getByRole("radio", { name: "Testhand" }).click();
   await page.getByRole("button", { name: /^Mementotlanische Enghexe \(0\/3\)$/ }).click();
   await page.getByLabel(/Seed/).fill("1234");
+}
+
+test("Ash Blossom des Gegners: du entscheidest, Suche wird annulliert", async ({ page }) => {
+  test.setTimeout(120_000);
+  await openSetup(page);
 
   // Erste Schnellwahl = Ash Blossom. Erste Handtrap schaltet „Ich antworte für den Gegner“ ein.
   const chip = page.getByRole("button", { name: /zur Gegnerhand$/ }).first();
@@ -53,4 +59,41 @@ test("Ash Blossom des Gegners: du entscheidest, Suche wird annulliert", async ({
   await expect(page.getByRole("button", { name: /Tatsunootoshigo/ })).toHaveCount(0);
   await expect(page.getByRole("button", { name: /^Gegnerhand ansehen \(4 Karten\)$/ })).toBeVisible();
   await shot(page, "43-nach-ash");
+});
+
+test("Ich spiele den Gegner: sein Zug über das Auswahlfenster, Zone auf seiner Feldseite", async ({ page }) => {
+  test.setTimeout(120_000);
+  await openSetup(page);
+  await page.getByRole("radio", { name: "Ich spiele den Gegner" }).click();
+  // Verhalten „setzt Karten“ ist dann ohne Bedeutung → ausgeblendet
+  await expect(page.getByRole("radiogroup", { name: "Gegnerverhalten" })).toHaveCount(0);
+  await checkLayout(page);
+  await page.getByRole("button", { name: "Duell starten" }).click();
+  await expect(page.getByRole("button", { name: /Mementotlanische Enghexe – Aktionen/ })).toBeVisible({ timeout: 30_000 });
+
+  // Eigener Zug: direkt in die End Phase
+  await page.getByRole("button", { name: "End Phase", exact: true }).click();
+  await settle(page);
+  await passChains(page);
+
+  // Zug des Gegners: Main Phase als rot markierte Liste
+  await expect(prompt(page)).toHaveClass(/for-opp/);
+  await expect(page.locator(".duel-info .phase:visible")).toContainText("Zug 2 · Gegner");
+  await checkLayout(page);
+  await shot(page, "44-gegnerzug");
+  await prompt(page).getByRole("button", { name: /^(Normalbeschwörung|Verdeckt setzen|Setzen)/ }).first().click();
+  await settle(page);
+  // Zone auf der Gegnerseite antippen (Fenster klappt dafür ein)
+  await place(page);
+  await expect(page.getByRole("button", { name: /^Gegner Monster \d: (?!leer)/ })).toHaveCount(1);
+  await shot(page, "45-gegner-beschworen");
+  await prompt(page).getByRole("button", { name: /End Phase/ }).click();
+  await settle(page);
+  for (let i = 0; i < 6 && (await prompt(page).count()); i++) {
+    // Handlimit o. Ä. des Gegners: einfach die erste Möglichkeit
+    const pass = prompt(page).getByRole("button", { name: "Nicht aktivieren" });
+    if (await pass.count()) await pass.click(); else break;
+    await settle(page);
+  }
+  await expect(page.locator(".duel-info .phase:visible")).toContainText("Zug 3 · du");
 });

@@ -396,3 +396,5 @@ h3 { font-size: 0.95rem; margin: 16px 0 8px; }
 .opp-banner { margin: 6px 16px 0; padding: 6px 10px; border-radius: 8px; background: color-mix(in srgb, var(--bad) 14%, var(--panel)); color: var(--bad); font-weight: 600; }
 .prompt-pill.for-opp { background: var(--bad); }
 .hand .opp-hand.btn { min-height: var(--tap); white-space: nowrap; }
+.segmented.stacked { flex-direction: column; }
+.segmented.stacked button + button { border-top: 1px solid var(--line); }

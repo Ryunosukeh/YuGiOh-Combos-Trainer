@@ -21,7 +21,9 @@ export function fieldActions(d: Decision | null, data: GameData): FieldActions {
   const empty: FieldActions = { byCard: new Map(), general: [], zones: new Map(), onField: false };
   if (!d) return empty;
   const t = d.msg.type;
-  if (t === OcgMessageType.SELECT_IDLECMD || t === OcgMessageType.SELECT_BATTLECMD) {
+  // Zug des Gegners (Modus „ich spiele den Gegner“): seine Handkarten liegen nicht auf dem Bildschirm →
+  // Aktionen als Liste im Auswahlfenster statt auf dem Feld.
+  if ((t === OcgMessageType.SELECT_IDLECMD || t === OcgMessageType.SELECT_BATTLECMD) && !d.forOpponent) {
     const p = buildPrompt(d.msg, { data, hint: d.hint });
     if (p?.kind !== "menu") return empty;
     const byCard = new Map<string, MenuOption[]>();

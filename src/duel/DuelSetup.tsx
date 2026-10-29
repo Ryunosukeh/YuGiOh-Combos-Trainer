@@ -108,11 +108,11 @@ export function DuelSetup() {
             )}
           </select>
         </label>
-        <div className="segmented" role="radiogroup" aria-label="Gegnerverhalten">
+        {opp.mode !== "manual" && <><div className="segmented" role="radiogroup" aria-label="Gegnerverhalten">
           <button role="radio" aria-checked={behavior === "set"} className={behavior === "set" ? "on" : ""} onClick={() => setOpp({ behavior: "set" })}>Gegner setzt Karten</button>
           <button role="radio" aria-checked={behavior === "passive"} className={behavior === "passive" ? "on" : ""} onClick={() => setOpp({ behavior: "passive" })}>Gegner passiv</button>
         </div>
-        <p className="muted small">Von sich aus aktiviert der Gegner nie etwas und greift nie an. „Setzt Karten“: pro Zug ein Monster verdeckt und Zauber/Fallen gesetzt – so hat das Feld Ziele und seine Hand läuft nicht über.</p>
+        <p className="muted small">Von sich aus aktiviert der Gegner nie etwas und greift nie an. „Setzt Karten“: pro Zug ein Monster verdeckt und Zauber/Fallen gesetzt – so hat das Feld Ziele und seine Hand läuft nicht über.</p></>}
         <OpponentHand hand={opp.hand} setHand={(hand) => setOpp({ hand })} mode={opp.mode} setMode={(mode) => setOpp({ mode })} />
         <div className="segmented" role="radiogroup" aria-label="Antwortfenster">
           <button role="radio" aria-checked={chainPrompts === "auto"} className={chainPrompts === "auto" ? "on" : ""} onClick={() => setChainPrompts("auto")}>Ketten: nur wenn sinnvoll</button>

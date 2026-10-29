@@ -19,7 +19,7 @@ export function HandBar({ view, actions }: { view: DuelView; actions: FieldActio
   const opp = (1 - view.me) as 0 | 1;
   const oppCount = view.players[opp].hand.length;
   // Wer für den Gegner antwortet, muss dessen Hand kennen → antippbar. Sonst bleibt sie verdeckt.
-  const askOpp = useDuel((s) => s.config?.opponent?.mode === "ask");
+  const askOpp = useDuel((s) => s.config?.opponent?.mode === "ask" || s.config?.opponent?.mode === "manual");
   const setUi = useDuel((s) => s.setUi);
   return (
     <div className="hand" aria-label={`Deine Hand: ${hand.length} Karten`}>

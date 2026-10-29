@@ -25,8 +25,8 @@ export interface OpponentPrefs {
   behavior: "set" | "passive";
   /** Karten, die der Gegner zu Beginn auf der Hand hat (Handtraps). */
   hand: number[];
-  /** "ask": Du entscheidest, ob und wie der Gegner antwortet. */
-  mode: "ask" | "pass";
+  /** "ask": Du entscheidest, ob und wie der Gegner antwortet. "manual": Du spielst ihn komplett. */
+  mode: "ask" | "pass" | "manual";
 }
 
 interface Settings {

@@ -27,7 +27,7 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
       Einstellungen-Fenster (Ausrichtung, Hintergrund, Seitenleiste). Anleitung `docs/ANDROID.md`.
 - [x] Schritt 7: Gegner-Antworten („Ich antworte für den Gegner“, Gegnerhand mit Handtraps), Windows-EXE (Tauri 2,
       `src-tauri/`, `docs/WINDOWS.md`), CI `.github/workflows/ci.yml`: Tests → Pages + APK + EXE → Vorabversion
-      `latest`; PRs nur prüfen. 43 Vitest + 24 Playwright.
+      `latest`; PRs nur prüfen. 44 Vitest + 26 Playwright.
 
 ## Entscheidungen
 - Kern: `ocgcore-wasm` 0.1.6 (npm), **sync**-Variante im Web Worker.
@@ -70,6 +70,10 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
   Merker `oppActivating`). Zugsteuerung, Setzen, Zonen, Handlimit bleiben beim Dummy. Gegnerhand frei wählbar
   (Schnellwahl Handtraps + Suche, max. 10), Gegner-Einstellungen gerätebezogen in `settings.opp`.
   Gegnerhand nur in diesem Modus einsehbar (Knopf „Gegner: n“).
+- Modus „manual“ („Ich spiele den Gegner“): alle Gegner-Entscheidungen beim Nutzer; Main/Battle Phase des Gegners
+  erscheint als Liste im Auswahlfenster (`fieldActions` → `onField: false` bei `forOpponent`), Zonen auf seiner
+  Feldseite antippbar. Gute Gegner-KI: bewusst nicht (keine existiert für beliebige Decks; WindBot nur feste
+  Decks, C#/.NET + Server-Protokoll) – Nutzer entscheidet, ob WindBot genauer geprüft wird.
 - React: Zahlen nie direkt in `&&`-Ketten (`x & 1 && …` rendert „0“) → `(x & 1) !== 0`.
 - „Aktion zurück“ = bis vor die letzte Main/Battle-Phase-Wahl (`engine/undo.ts`); „Schritt zurück“ = eine Antwort.
 - Einstellungen fürs Gerät (Hintergrund, Seitenleiste) in localStorage (`app/settings.ts`); Hintergründe sind
