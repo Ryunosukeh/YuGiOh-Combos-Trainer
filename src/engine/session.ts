@@ -28,7 +28,11 @@ export interface DuelConfig {
   opponent?: {
     deck?: DeckList;
     hand?: number[];
-    /** "pass": Dummy entscheidet alles selbst. "ask": Entscheidungen des Gegners werden dem Nutzer vorgelegt. */
+    /**
+     * "pass": Dummy entscheidet alles selbst. "ask": Du entscheidest für den Gegner, ob er antwortet (Kettenfenster,
+     * optionale Effekte) und alles innerhalb einer Kette, an der er beteiligt ist (Ziele, Kosten …).
+     * Zugsteuerung, Setzen, Zonen und Handlimit außerhalb von Ketten bleiben beim Dummy.
+     */
     mode?: "pass" | "ask";
     /** "passive" (Standard): tut nichts. "set": setzt pro Zug ein Monster und Zauber/Fallen, aktiviert nie. */
     behavior?: DummyBehavior;
@@ -73,6 +77,8 @@ export class DuelSession {
   turnPlayer: 0 | 1 = 0;
   /** Spieler der Glieder der aktuell entstehenden Kette (für „nicht auf eigene Effekte antworten“). */
   private chainOwners: (0 | 1)[] = [];
+  /** Gegner aktiviert gerade (Kosten/Ziele vor CHAINED) – diese Entscheidungen trifft im Modus „ask“ der Nutzer. */
+  private oppActivating = false;
   phase = 0;
   /** Skripte, die der Kern angefragt hat, die es aber nicht gibt (Diagnose). */
   readonly missingScripts = new Set<string>();
@@ -169,6 +175,7 @@ export class DuelSession {
     const status = this.core.duelProcess(this.handle);
     const msgs = this.core.duelGetMessage(this.handle);
     if (msgs[0]?.type === OcgMessageType.RETRY) return false;
+    this.noteResponse(this.decision, r);
     this.responses.push(r);
     this.decision = null;
     this.drive({ status, msgs });
@@ -211,7 +218,8 @@ export class DuelSession {
         else if (m.type === OcgMessageType.NEW_TURN) { this.turn++; this.turnPlayer = m.player as 0 | 1; }
         else if (m.type === OcgMessageType.NEW_PHASE) this.phase = m.phase;
         else if (m.type === OcgMessageType.CHAINING) this.chainOwners.push(m.controller);
-        else if (m.type === OcgMessageType.CHAIN_END) this.chainOwners = [];
+        else if (m.type === OcgMessageType.CHAINED) this.oppActivating = false;
+        else if (m.type === OcgMessageType.CHAIN_END) { this.chainOwners = []; this.oppActivating = false; }
       }
       if (status === OcgProcessResult.END || this.result) return;
       if (status === OcgProcessResult.CONTINUE) continue;
@@ -228,6 +236,7 @@ export class DuelSession {
       }
       const replay = this.replayQueue.shift();
       if (replay) {
+        this.noteResponse(decision, replay);
         this.core.duelSetResponse(this.handle, replay);
         this.responses.push(replay);
         const status2 = this.core.duelProcess(this.handle);
@@ -242,6 +251,13 @@ export class DuelSession {
     }
   }
 
+  /** Merkt sich, ob der Nutzer für den Gegner gerade etwas aktiviert (Folgefragen gehen dann an den Nutzer). */
+  private noteResponse(d: Decision, r: OcgResponse) {
+    if (!d.forOpponent) return;
+    if (r.type === OcgResponseType.SELECT_CHAIN && r.index !== null) this.oppActivating = true;
+    if (r.type === OcgResponseType.SELECT_EFFECTYN && r.yes) this.oppActivating = true;
+  }
+
   private autoResponse(d: Decision): OcgResponse | null {
     if (isEmptyChainWindow(d.msg) && this.config.autoPassEmpty !== false) return dummyResponse(d.msg, this.data);
     if (d.msg.type === OcgMessageType.SELECT_CHAIN && !d.msg.forced && this.config.chainPrompts !== "all") {
@@ -250,10 +266,14 @@ export class DuelSession {
     }
     if (!d.forOpponent) return null;
     if (this.config.opponent?.mode === "ask") {
-      // Zugsteuerung bleibt beim Dummy; alle echten Entscheidungen (Handtraps, Ziele …) trifft der Nutzer.
-      const t = d.msg.type;
-      if (t === OcgMessageType.SELECT_IDLECMD || t === OcgMessageType.SELECT_BATTLECMD) return dummyResponse(d.msg, this.data, this.config.opponent?.behavior);
-      return null;
+      const m = d.msg;
+      // Antworten (Handtraps, optionale Effekte) entscheidet der Nutzer – Pflicht-Kette mit nur einer Wahl nicht.
+      if (m.type === OcgMessageType.SELECT_CHAIN && !(m.forced && m.selects.length === 1)) return null;
+      if (m.type === OcgMessageType.SELECT_EFFECTYN) return null;
+      // Alles innerhalb einer Kette mit Gegner-Beteiligung (Ziele, Kosten, Auflösung) ebenso.
+      const t = m.type;
+      const control = t === OcgMessageType.SELECT_IDLECMD || t === OcgMessageType.SELECT_BATTLECMD;
+      if (!control && (this.oppActivating || this.chainOwners.includes(d.player))) return null;
     }
     return dummyResponse(d.msg, this.data, this.config.opponent?.behavior);
   }

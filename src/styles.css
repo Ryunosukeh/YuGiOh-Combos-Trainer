@@ -388,3 +388,11 @@ h3 { font-size: 0.95rem; margin: 16px 0 8px; }
 .bg-swatch { width: 28px; height: 28px; border-radius: 6px; flex: none; background: var(--mat, var(--panel-2)); border: 1px solid var(--line); }
 .field { text-align: left; align-self: stretch; }
 .field select { width: 100%; font-size: 1rem; }
+
+/* Entscheidungen für den Gegner (Modus „ich antworte für den Gegner“) */
+.prompt.for-opp { border-top: 4px solid var(--bad); }
+.prompt.landscape.for-opp { border-top: 0; border-left: 4px solid var(--bad); }
+.duel.side-left .prompt.landscape.for-opp { border-left: 0; border-right: 4px solid var(--bad); }
+.opp-banner { margin: 6px 16px 0; padding: 6px 10px; border-radius: 8px; background: color-mix(in srgb, var(--bad) 14%, var(--panel)); color: var(--bad); font-weight: 600; }
+.prompt-pill.for-opp { background: var(--bad); }
+.hand .opp-hand.btn { min-height: var(--tap); white-space: nowrap; }

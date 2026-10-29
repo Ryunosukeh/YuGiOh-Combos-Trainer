@@ -63,6 +63,12 @@ Yu-Gi-Oh! Combo-Sandbox: Solo-Duell gegen passiven Dummy zum Üben von Combos, m
 - Gegner: Beispieldecks (`src/fixtures/sampleDecks.ts`, aus Namen erzeugt und per Test geprüft) oder eigenes
   Deck. Verhalten „set“ (Standard in der UI: pro Zug ein Monster + Zauber/Fallen setzen, nie aktivieren/angreifen)
   oder „passive“. Keine KI – feste, deterministische Regel im Autopiloten.
+- Gegner-Antworten (Modus „ask“, UI „Ich antworte für den Gegner“): Nutzer entscheidet Kettenfenster und
+  optionale Effekte des Gegners sowie alles in einer Kette mit Gegner-Glied (inkl. Kosten/Ziele vor CHAINED,
+  Merker `oppActivating`). Zugsteuerung, Setzen, Zonen, Handlimit bleiben beim Dummy. Gegnerhand frei wählbar
+  (Schnellwahl Handtraps + Suche, max. 10), Gegner-Einstellungen gerätebezogen in `settings.opp`.
+  Gegnerhand nur in diesem Modus einsehbar (Knopf „Gegner: n“).
+- React: Zahlen nie direkt in `&&`-Ketten (`x & 1 && …` rendert „0“) → `(x & 1) !== 0`.
 - „Aktion zurück“ = bis vor die letzte Main/Battle-Phase-Wahl (`engine/undo.ts`); „Schritt zurück“ = eine Antwort.
 - Einstellungen fürs Gerät (Hintergrund, Seitenleiste) in localStorage (`app/settings.ts`); Hintergründe sind
   reine CSS-Verläufe (keine Fremdgrafiken).

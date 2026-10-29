@@ -13,7 +13,7 @@ export function DuelCard({ card, hidden = false, noStats = false }: { card: Card
     <span className={`duel-card ${defense ? "def" : ""} ${faceUp ? "" : "facedown"}`}>
       {showBack ? <span className="card-back" /> : <CardImage card={rec!} />}
       {!showBack && !faceUp && <span className="fd-mark" aria-hidden>verdeckt</span>}
-      {!noStats && faceUp && card.atk !== undefined && rec && rec.type & 1 && (
+      {!noStats && faceUp && card.atk !== undefined && rec && (rec.type & 1) !== 0 && (
         <span className="stats">{card.atk}{card.link ? "" : `/${card.def}`}</span>
       )}
     </span>

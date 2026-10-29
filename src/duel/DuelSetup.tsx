@@ -8,6 +8,8 @@ import { randomSeed } from "../engine/seed";
 import { CardImage } from "../ui/CardImage";
 import { Sheet } from "../ui/Sheet";
 import { SAMPLE_DECKS } from "../fixtures/sampleDecks";
+import { useSettings, type OpponentPrefs } from "../app/settings";
+import { OpponentHand } from "./OpponentHand";
 
 export function DuelSetup() {
   const { duelSetup, set, data } = useApp();
@@ -19,9 +21,10 @@ export function DuelSetup() {
   const [fill, setFill] = useState(false);
   const [seedText, setSeedText] = useState("");
   const [chainPrompts, setChainPrompts] = useState<"auto" | "all">("auto");
-  /** Gegnerdeck: "sample:<id>" oder "deck:<id>" (eigenes Deck). */
-  const [oppDeck, setOppDeck] = useState("sample:klassik");
-  const [behavior, setBehavior] = useState<"set" | "passive">("set");
+  // Gegner-Einstellungen bleiben gerätebezogen gespeichert (Einstellungen), Deck: "sample:<id>" oder "deck:<id>".
+  const opp = useSettings((s) => s.opp);
+  const setOpp = (p: Partial<OpponentPrefs>) => useSettings.getState().setSettings({ opp: { ...useSettings.getState().opp, ...p } });
+  const { deck: oppDeck, behavior } = opp;
   const decks = useApp((s) => s.decks);
 
   const unique = useMemo(() => {
@@ -40,6 +43,7 @@ export function DuelSetup() {
   const opponentDeck = () => {
     const [kind, oid] = oppDeck.split(":");
     if (kind === "deck") { const d = decks.find((x) => x.id === oid); if (d?.main.length) return { main: d.main, extra: d.extra }; }
+    // Gespeichertes eigenes Deck gelöscht → Beispieldeck
     return { main: (SAMPLE_DECKS.find((x) => x.id === oid) ?? SAMPLE_DECKS[0]).main, extra: [] };
   };
 
@@ -48,7 +52,7 @@ export function DuelSetup() {
     start({
       deck: { main: deck.main, extra: deck.extra, side: deck.side },
       seed, goFirst, chainPrompts,
-      opponent: { deck: opponentDeck(), behavior },
+      opponent: { deck: opponentDeck(), behavior, hand: opp.hand.filter((c) => data.cards.has(c)), mode: opp.mode },
       ...(mode === "test" && hand.length ? { hand, fillHand: fill } : {}),
     }, deck.id);
     set({ duelSetup: null, route: { screen: "duel" }, detail: null });
@@ -93,7 +97,7 @@ export function DuelSetup() {
         )}
         <label className="field">
           <span>Gegnerdeck</span>
-          <select value={oppDeck} onChange={(e) => setOppDeck(e.target.value)} aria-label="Gegnerdeck">
+          <select value={oppDeck} onChange={(e) => setOpp({ deck: e.target.value })} aria-label="Gegnerdeck">
             <optgroup label="Beispieldecks (schwach)">
               {SAMPLE_DECKS.map((d) => <option key={d.id} value={`sample:${d.id}`}>{d.name}</option>)}
             </optgroup>
@@ -105,10 +109,11 @@ export function DuelSetup() {
           </select>
         </label>
         <div className="segmented" role="radiogroup" aria-label="Gegnerverhalten">
-          <button role="radio" aria-checked={behavior === "set"} className={behavior === "set" ? "on" : ""} onClick={() => setBehavior("set")}>Gegner setzt Karten</button>
-          <button role="radio" aria-checked={behavior === "passive"} className={behavior === "passive" ? "on" : ""} onClick={() => setBehavior("passive")}>Gegner passiv</button>
+          <button role="radio" aria-checked={behavior === "set"} className={behavior === "set" ? "on" : ""} onClick={() => setOpp({ behavior: "set" })}>Gegner setzt Karten</button>
+          <button role="radio" aria-checked={behavior === "passive"} className={behavior === "passive" ? "on" : ""} onClick={() => setOpp({ behavior: "passive" })}>Gegner passiv</button>
         </div>
-        <p className="muted small">Der Gegner aktiviert nie etwas und greift nie an. „Setzt Karten“: pro Zug ein Monster verdeckt und Zauber/Fallen gesetzt – so hat das Feld Ziele und seine Hand läuft nicht über.</p>
+        <p className="muted small">Von sich aus aktiviert der Gegner nie etwas und greift nie an. „Setzt Karten“: pro Zug ein Monster verdeckt und Zauber/Fallen gesetzt – so hat das Feld Ziele und seine Hand läuft nicht über.</p>
+        <OpponentHand hand={opp.hand} setHand={(hand) => setOpp({ hand })} mode={opp.mode} setMode={(mode) => setOpp({ mode })} />
         <div className="segmented" role="radiogroup" aria-label="Antwortfenster">
           <button role="radio" aria-checked={chainPrompts === "auto"} className={chainPrompts === "auto" ? "on" : ""} onClick={() => setChainPrompts("auto")}>Ketten: nur wenn sinnvoll</button>
           <button role="radio" aria-checked={chainPrompts === "all"} className={chainPrompts === "all" ? "on" : ""} onClick={() => setChainPrompts("all")}>Ketten: immer fragen</button>

@@ -19,11 +19,23 @@ export const ORIENTATIONS: { id: OrientationSetting; name: string }[] = [
   { id: "landscape", name: "Immer Querformat" },
 ];
 
+export interface OpponentPrefs {
+  /** "sample:<id>" oder "deck:<id>" */
+  deck: string;
+  behavior: "set" | "passive";
+  /** Karten, die der Gegner zu Beginn auf der Hand hat (Handtraps). */
+  hand: number[];
+  /** "ask": Du entscheidest, ob und wie der Gegner antwortet. */
+  mode: "ask" | "pass";
+}
+
 interface Settings {
   duelBg: DuelBackground;
   /** Duell im Querformat: Seitenleiste rechts (Rechtshänder) oder links. */
   sidebar: "right" | "left";
   orientation: OrientationSetting;
+  /** Zuletzt gewählte Gegner-Einstellungen im Duell-Start (gerätebezogen, damit man sie nicht jedes Mal neu wählt). */
+  opp: OpponentPrefs;
   /** Laufzeit (nicht gespeichert): false, wenn der Browser die gewählte Ausrichtung nicht sperren konnte. */
   orientationOk: boolean;
   setSettings(p: Partial<Omit<Settings, "setSettings">>): void;
@@ -31,11 +43,14 @@ interface Settings {
 
 export const useSettings = create<Settings>()(
   persist(
-    (set) => ({ duelBg: "matte", sidebar: "right", orientation: "auto", orientationOk: true, setSettings: (p) => set(p) }),
+    (set) => ({ duelBg: "matte", sidebar: "right", orientation: "auto", orientationOk: true,
+      opp: { deck: "sample:klassik", behavior: "set", hand: [], mode: "pass" }, setSettings: (p) => set(p) }),
     {
       name: "settings",
       storage: createJSONStorage(() => localStorage),
-      partialize: ({ duelBg, sidebar, orientation }) => ({ duelBg, sidebar, orientation }),
+      partialize: ({ duelBg, sidebar, orientation, opp }) => ({ duelBg, sidebar, orientation, opp }),
+      // Ältere Speicherstände ohne neue Felder: Standardwerte behalten.
+      merge: (saved, current) => ({ ...current, ...(saved as object), opp: { ...current.opp, ...((saved as Partial<Settings>)?.opp ?? {}) } }),
     },
   ),
 );

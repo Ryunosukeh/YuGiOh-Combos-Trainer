@@ -1,6 +1,6 @@
 // Engine-Tests gegen den echten Kern und die echten Project-Ignis-Skripte.
 // Benötigen das Datenpaket (npm run update-data); ohne Paket werden sie übersprungen.
-import { OcgLocation, OcgMessageType, OcgPosition } from "ocgcore-wasm";
+import { OcgLocation, OcgMessageType, OcgPosition, OcgResponseType } from "ocgcore-wasm";
 import createCore, { type OcgCoreSync } from "ocgcore-wasm";
 import { beforeAll, describe, expect, it } from "vitest";
 import { bundleExists, loadBundle } from "../src/data/node-bundle";
@@ -8,6 +8,7 @@ import type { GameData } from "../src/engine/data";
 import { DuelSession, type DuelConfig } from "../src/engine/session";
 import { Driver } from "../src/engine/driver";
 import { C, mementoDeck, playAcceptanceCombo } from "../src/fixtures/memento";
+import { SAMPLE_DECKS } from "../src/fixtures/sampleDecks";
 
 const hasData = bundleExists();
 let core: OcgCoreSync;
@@ -105,6 +106,42 @@ describe.skipIf(!hasData)("Engine", () => {
     // Suche wurde annulliert: Wir sind zurück in der Main Phase, ohne Suche.
     expect(s.decision?.msg.type).toBe(OcgMessageType.SELECT_IDLECMD);
     expect(codes(s, 0, OcgLocation.HAND)).not.toContain(C.Tatsunootoshigo);
+    s.destroy();
+  });
+
+  it("Gegner-Modus „fragen“: Ziel der Gegner-Handtrap (Veiler) wählt der Nutzer", () => {
+    const Veiler = 97268402;
+    const s = DuelSession.start(core, data, { ...testhand, opponent: { hand: [Veiler], mode: "ask" } });
+    const d = new Driver(s);
+    d.idle("summon", C.Angwitch);
+    d.activate(C.Angwitch);
+    expect(s.decision?.forOpponent).toBe(true);
+    d.activate(Veiler);
+    // Zielwahl gehört zur Aktivierung des Gegners → kommt beim Nutzer an, nicht beim Dummy.
+    if (s.decision?.forOpponent && s.decision.msg.type !== OcgMessageType.SELECT_CHAIN) d.pick(C.Angwitch);
+    d.passChains();
+    expect(codes(s, 1, OcgLocation.GRAVE)).toContain(Veiler);
+    expect(codes(s, 0, OcgLocation.HAND)).not.toContain(C.Tatsunootoshigo);
+    expect(s.decision?.msg.type).toBe(OcgMessageType.SELECT_IDLECMD);
+    s.destroy();
+  });
+
+  it("Gegner-Modus „fragen“: Zug des Gegners (setzt Karten) fragt nur echte Antworten", () => {
+    const deck = SAMPLE_DECKS.find((x) => x.id === "klassik")!;
+    const s = DuelSession.start(core, data, { ...testhand, opponent: { deck: { main: deck.main, extra: [] }, mode: "ask", behavior: "set" } });
+    const d = new Driver(s);
+    d.endPhase();
+    const asked: number[] = [];
+    while (s.decision?.forOpponent) {
+      asked.push(s.decision.msg.type);
+      d.passChains();
+      if (s.decision?.msg.type === OcgMessageType.SELECT_EFFECTYN) s.respond({ type: OcgResponseType.SELECT_EFFECTYN, yes: false });
+    }
+    for (const t of asked) expect([OcgMessageType.SELECT_CHAIN, OcgMessageType.SELECT_EFFECTYN]).toContain(t);
+    // Wieder bei uns: Zug 3, Gegner hat gesetzt (Platz und Position hat der Dummy gewählt).
+    expect(s.turn).toBe(3);
+    expect(s.decision?.msg.type).toBe(OcgMessageType.SELECT_IDLECMD);
+    expect(s.cards(1, OcgLocation.MZONE).filter(Boolean).length + s.cards(1, OcgLocation.SZONE).filter(Boolean).length).toBeGreaterThan(0);
     s.destroy();
   });
 

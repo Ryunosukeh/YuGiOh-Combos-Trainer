@@ -1,6 +1,7 @@
 // Auswahlfenster für jede Anfrage des Kerns, die nicht direkt auf dem Feld getroffen wird.
 // Hochformat: Bottom Sheet. Querformat: Seitenpanel. Einklappbar („Feld ansehen“).
 import { useMemo, useState } from "react";
+import { OcgMessageType } from "ocgcore-wasm";
 import { useApp } from "../app/store";
 import { useDuel } from "../app/duel";
 import { cardName } from "../engine/data";
@@ -16,22 +17,24 @@ export function PromptPanel({ decision }: { decision: Decision }) {
   const layout = useLayout();
   const prompt = useMemo(() => (data ? buildPrompt(decision.msg, { data, hint: decision.hint }) : null), [decision, data]);
   if (!prompt || !data) return null;
-  const who = decision.forOpponent ? "Gegner: " : "";
+  const opp = decision.forOpponent;
+  const who = opp ? "Gegner: " : "";
 
   if (minimized)
     return (
-      <button className="prompt-pill" onClick={() => setUi({ minimized: false })}>
+      <button className={`prompt-pill ${opp ? "for-opp" : ""}`} onClick={() => setUi({ minimized: false })}>
         {who}{prompt.title} – Auswahl öffnen
       </button>
     );
 
   return (
-    <section className={`prompt ${layout}`} role="dialog" aria-label={`${who}${prompt.title}`}>
+    <section className={`prompt ${layout} ${opp ? "for-opp" : ""}`} role="dialog" aria-label={`${who}${prompt.title}`}>
       <header className="sheet-head">
         <h2>{who}{prompt.title}</h2>
         <button className="btn small" onClick={() => undoAction()} disabled={busy || !view?.steps} aria-label="Aktion abbrechen und rückgängig" title="Ganze Aktion zurücknehmen">↶</button>
         <button className="btn small" onClick={() => setUi({ minimized: true })}>Feld ansehen</button>
       </header>
+      {opp && <p className="opp-banner small">Du entscheidest für den Gegner{decision.msg.type === OcgMessageType.SELECT_CHAIN ? " – antwortet er?" : ""}</p>}
       {rejected && <p className="error small prompt-error" role="alert">Der Regelkern hat diese Auswahl abgelehnt – bitte anders wählen.</p>}
       <div className="sheet-body">
         {/* Neuer Schlüssel je Entscheidung → keine Auswahl von der vorherigen Anfrage übrig */}

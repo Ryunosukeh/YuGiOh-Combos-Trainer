@@ -16,13 +16,24 @@ import { DuelCard } from "./DuelCard";
 
 export function HandBar({ view, actions }: { view: DuelView; actions: FieldActions }) {
   const hand = view.players[view.me].hand;
+  const opp = (1 - view.me) as 0 | 1;
+  const oppCount = view.players[opp].hand.length;
+  // Wer für den Gegner antwortet, muss dessen Hand kennen → antippbar. Sonst bleibt sie verdeckt.
+  const askOpp = useDuel((s) => s.config?.opponent?.mode === "ask");
+  const setUi = useDuel((s) => s.setUi);
   return (
     <div className="hand" aria-label={`Deine Hand: ${hand.length} Karten`}>
       {hand.length === 0 && <span className="muted small hand-empty">Keine Karten auf der Hand</span>}
       {hand.map((c, i) => <HandCard key={i} card={c} k={`${view.me}-${OcgLocation.HAND}-${i}`} actions={actions} />)}
-      <span className="opp-hand muted small" aria-label={`Gegner hat ${view.players[1 - view.me].hand.length} Karten auf der Hand`}>
-        Gegner: {view.players[1 - view.me].hand.length} 🂠
-      </span>
+      {askOpp ? (
+        <button className="opp-hand btn small" onClick={() => setUi({ pile: { player: opp, location: OcgLocation.HAND } })} aria-label={`Gegnerhand ansehen (${oppCount} Karten)`}>
+          Gegner: {oppCount} 🂠
+        </button>
+      ) : (
+        <span className="opp-hand muted small" aria-label={`Gegner hat ${oppCount} Karten auf der Hand`}>
+          Gegner: {oppCount} 🂠
+        </span>
+      )}
     </div>
   );
 }
@@ -70,7 +81,7 @@ export function PileViewer({ view, actions }: { view: DuelView; actions: FieldAc
   const { data, set } = useApp();
   if (!pile || !data) return null;
   const p = view.players[pile.player];
-  const list = pile.location === OcgLocation.GRAVE ? p.grave : pile.location === OcgLocation.REMOVED ? p.removed : pile.location === OcgLocation.EXTRA ? p.extra : [];
+  const list = pile.location === OcgLocation.GRAVE ? p.grave : pile.location === OcgLocation.REMOVED ? p.removed : pile.location === OcgLocation.EXTRA ? p.extra : pile.location === OcgLocation.HAND ? p.hand : [];
   const mine = pile.player === view.me;
   // Aktionen in diesem Stapel (Sequenz = Index im Stapel)
   const acts = [...actions.byCard.entries()].filter(([k]) => k.startsWith(`${pile.player}-${pile.location}-`));
@@ -90,7 +101,7 @@ export function PileViewer({ view, actions }: { view: DuelView; actions: FieldAc
         {[...list].reverse().map((c, i) => (
           <li key={i}>
             <button className="pile-card" onClick={() => c.code && set({ detail: c.code })} aria-label={c.code ? cardName(data, c.code) : "verdeckt"}>
-              <DuelCard card={{ ...c, position: mine || c.position & 0x5 ? 1 : c.position }} hidden={!mine && !(c.position & 0x5) && pile.location === OcgLocation.EXTRA} />
+              <DuelCard card={{ ...c, position: mine || c.position & 0x5 || pile.location === OcgLocation.HAND ? 1 : c.position }} hidden={!mine && !(c.position & 0x5) && pile.location === OcgLocation.EXTRA} />
               <span className="small">{c.code ? cardName(data, c.code) : "?"}</span>
             </button>
           </li>
